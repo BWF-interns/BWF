@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BWF — Career Roadmap</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <style>
+        .timeline {
+            position: relative;
+            padding-left: 32px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 11px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--border);
+        }
+
+        .milestone-item {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .milestone-dot {
+            position: absolute;
+            left: -32px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid var(--border);
+            background: var(--bg-dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+            z-index: 1;
+        }
+
+        .milestone-dot.done {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        .milestone-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .milestone-card:hover {
+            border-color: var(--border-light);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .milestone-card.done {
+            opacity: 0.7;
+        }
+
+        .category-section {
+            margin-bottom: 32px;
+        }
+
+        .category-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .category-icon {
+            font-size: 24px;
+        }
+
+        .goal-banner {
+            background: linear-gradient(135deg, rgba(108, 99, 255, 0.15) 0%, rgba(236, 72, 153, 0.1) 100%);
+            border: 1px solid rgba(108, 99, 255, 0.3);
+            border-radius: var(--radius-xl);
+            padding: 28px 32px;
+            margin-bottom: 24px;
+        }
+
+        .external-link-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            text-decoration: none;
+            color: inherit;
+            transition: var(--transition);
+            margin-bottom: 8px;
+        }
+
+        .external-link-card:hover {
+            border-color: var(--primary);
+            color: var(--primary-light);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-layout">
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <div class="logo-icon">🌏</div>
+                <div class="logo-text">
+                    <h2>BWF Portal</h2>
+                    <p>Career Roadmap</p>
+                </div>
+            </div>
+            <div class="sidebar-profile">
+                <div class="student-card">
+                    <div class="student-avatar" id="sb-avatar">--</div>
+                    <div class="student-info">
+                        <h4 id="sb-name">Loading...</h4>
+                        <p id="sb-class">--</p>
+                        <div class="student-badge" id="sb-level">⭐ Level 1</div>
+                    </div>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section-label">Main</div>
+                <a href="/dashboard" class="nav-link"><span class="nav-icon">🏠</span> Dashboard</a>
+                <a href="/profile" class="nav-link"><span class="nav-icon">👩‍🎓</span> My Profile</a>
+                <a href="/tasks" class="nav-link"><span class="nav-icon">✅</span> Daily Tasks</a>
+                <div class="nav-section-label">Learn & Grow</div>
+                <a href="/learning" class="nav-link"><span class="nav-icon">🎮</span> Learning Hub</a>
+                <a href="/roadmap" class="nav-link active"><span class="nav-icon">🗺️</span> Career Roadmap</a>
+                <a href="/leaderboard" class="nav-link"><span class="nav-icon">🏆</span> Leaderboard</a>
+                <div class="nav-section-label">Community</div>
+                <a href="/gallery" class="nav-link"><span class="nav-icon">📸</span> Gallery &amp; Hall of Fame</a>
+                <a href="/requests" class="nav-link"><span class="nav-icon">📋</span> My Requests</a>
+            </nav>
+            <div class="sidebar-bottom"><button class="logout-btn" onclick="AuthAPI.logout()"><span>🚪</span> Sign
+                    Out</button></div>
+        </aside>
+
+        <div class="main-content">
+            <header class="topbar">
+                <div style="display:flex;align-items:center;gap:14px">
+                    <button class="hamburger" id="hamburger">☰</button>
+                    <div class="topbar-left">
+                        <h1>🗺️ Career Roadmap</h1>
+                        <p>Your personalized journey to success</p>
+                    </div>
+                </div>
+                <div class="topbar-right">
+                    <div id="completion-badge" class="level-badge">0% Complete</div>
+                </div>
+            </header>
+
+            <div class="page-content fade-in">
+                <!-- Goal Banner -->
+                <div class="goal-banner">
+                    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px">
+                        <div>
+                            <div
+                                style="font-size:13px;color:var(--text-muted);text-transform:uppercase;font-weight:700;letter-spacing:1px">
+                                My Career Dream</div>
+                            <div style="font-size:28px;font-weight:900;font-family:'Outfit',sans-serif;margin-top:6px"
+                                id="career-goal-display">Set your dream career ✨</div>
+                            <div style="color:var(--text-secondary);font-size:14px;margin-top:4px"
+                                id="career-desc-display">Click "Edit Goal" to set your dream and build your roadmap!
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" onclick="openGoalEditor()">✏️ Edit Goal</button>
+                    </div>
+                    <div style="margin-top:20px">
+                        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px">
+                            <span style="color:var(--text-secondary)">Overall Progress</span>
+                            <strong id="pct-label">0%</strong>
+                        </div>
+                        <div class="progress-bar-wrap" style="height:12px">
+                            <div class="progress-bar-fill" id="main-progress" style="width:0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid-2" style="align-items:start">
+                    <!-- Milestones -->
+                    <div>
+                        <div id="milestones-container">
+                            <div class="spinner"></div>
+                        </div>
+                        <button class="btn btn-secondary btn-block" style="margin-top:16px"
+                            onclick="openAddMilestone()">+ Add New Milestone</button>
+                    </div>
+
+                    <!-- External Career Resources -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">🌐 Career Resources</div>
+                            <div class="card-subtitle">Explore these to boost your future!</div>
+                        </div>
+                        <a href="https://www.khanacademy.org" target="_blank" class="external-link-card"><span
+                                style="font-size:20px">📚</span>
+                            <div>
+                                <div style="font-size:13px;font-weight:600">Khan Academy</div>
+                                <div style="font-size:12px;color:var(--text-muted)">Free world-class education</div>
+                            </div><span style="margin-left:auto">↗</span>
+                        </a>
+                        <a href="https://www.coursera.org" target="_blank" class="external-link-card"><span
+                                style="font-size:20px">🎓</span>
+                            <div>
+                                <div style="font-size:13px;font-weight:600">Coursera</div>
+                                <div style="font-size:12px;color:var(--text-muted)">University courses online</div>
+                            </div><span style="margin-left:auto">↗</span>
+                        </a>
+                        <a href="https://www.futurelearn.com" target="_blank" class="external-link-card"><span
+                                style="font-size:20px">🚀</span>
+                            <div>
+                                <div style="font-size:13px;font-weight:600">FutureLearn</div>
+                                <div style="font-size:12px;color:var(--text-muted)">Skills for the future</div>
+                            </div><span style="margin-left:auto">↗</span>
+                        </a>
+                        <a href="https://www.ted.com/talks" target="_blank" class="external-link-card"><span
+                                style="font-size:20px">💡</span>
+                            <div>
+                                <div style="font-size:13px;font-weight:600">TED Talks</div>
+                                <div style="font-size:12px;color:var(--text-muted)">Inspiring ideas & careers</div>
+                            </div><span style="margin-left:auto">↗</span>
+                        </a>
+                        <a href="https://www.duolingo.com" target="_blank" class="external-link-card"><span
+                                style="font-size:20px">🦜</span>
+                            <div>
+                                <div style="font-size:13px;font-weight:600">Duolingo</div>
+                                <div style="font-size:12px;color:var(--text-muted)">Learn new languages for free</div>
+                            </div><span style="margin-left:auto">↗</span>
+                        </a>
+                        <a href="https://scratch.mit.edu" target="_blank" class="external-link-card"><span
+                                style="font-size:20px">👾</span>
+                            <div>
+                                <div style="font-size:13px;font-weight:600">Scratch by MIT</div>
+                                <div style="font-size:12px;color:var(--text-muted)">Learn to code by creating games
+                                </div>
+                            </div><span style="margin-left:auto">↗</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Goal Editor Modal -->
+    <div class="modal-overlay" id="goal-modal">
+        <div class="modal" style="position:relative">
+            <button class="modal-close"
+                onclick="document.getElementById('goal-modal').classList.remove('open')">✕</button>
+            <div class="modal-title">✏️ Edit Career Goal</div>
+            <div class="modal-subtitle">What do you want to become? Be specific!</div>
+            <div class="form-group">
+                <label class="form-label">Career Goal</label>
+                <input class="form-control" id="goal-input" placeholder="e.g. AI Engineer, Doctor, Teacher, Pilot..." />
+            </div>
+            <div class="form-group">
+                <label class="form-label">Why this career? (optional)</label>
+                <textarea class="form-control" id="goal-desc-input"
+                    placeholder="Tell us why you want this career and what inspires you..."></textarea>
+            </div>
+            <button class="btn btn-primary btn-block" onclick="saveGoal()">💾 Save Goal</button>
+        </div>
+    </div>
+
+    <!-- Add Milestone Modal -->
+    <div class="modal-overlay" id="milestone-modal">
+        <div class="modal" style="position:relative">
+            <button class="modal-close"
+                onclick="document.getElementById('milestone-modal').classList.remove('open')">✕</button>
+            <div class="modal-title">➕ Add Milestone</div>
+            <div class="modal-subtitle">Add a step on your journey!</div>
+            <div class="form-group">
+                <label class="form-label">Title</label>
+                <input class="form-control" id="ms-title" placeholder="e.g. Read 'Wings of Fire' by APJ Abdul Kalam" />
+            </div>
+            <div class="form-group">
+                <label class="form-label">Category</label>
+                <select class="form-control" id="ms-category">
+                    <option value="book">📖 Book</option>
+                    <option value="skill">⚡ Skill</option>
+                    <option value="hobby">🎨 Hobby</option>
+                    <option value="extra_curricular">🏅 Extra-Curricular</option>
+                    <option value="career">🎯 Career</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Description (optional)</label>
+                <input class="form-control" id="ms-desc" placeholder="Brief description..." />
+            </div>
+            <button class="btn btn-primary btn-block" onclick="addMilestone()">Add to Roadmap ✨</button>
+        </div>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script>
+        requireStudent();
+        initSidebar();
+
+        let roadmapData = null;
+        const catIcons = { book: '📖', skill: '⚡', hobby: '🎨', extra_curricular: '🏅', career: '🎯' };
+        const catLabels = { book: 'Books', skill: 'Skills', hobby: 'Hobbies', extra_curricular: 'Extra-Curricular', career: 'Career Goals' };
+        const categories = ['book', 'skill', 'hobby', 'extra_curricular', 'career'];
+
+        async function init() {
+            try {
+                const sRes = await StudentsAPI.me();
+                const s = sRes.data; const user = TokenManager.getUser();
+                document.getElementById('sb-avatar').textContent = getInitials(user.name);
+                document.getElementById('sb-name').textContent = user.name;
+                document.getElementById('sb-class').textContent = `${s.education?.currentClass || '--'} Class`;
+                document.getElementById('sb-level').textContent = `⭐ Level ${getLevel(s.totalPoints)}`;
+            } catch (e) { }
+            await loadRoadmap();
+        }
+
+        async function loadRoadmap() {
+            try {
+                const res = await RoadmapAPI.me();
+                roadmapData = res.data;
+                renderRoadmap();
+            } catch (e) { document.getElementById('milestones-container').innerHTML = '<div class="empty-state"><span class="emoji">😕</span><h3>Could not load roadmap</h3></div>'; }
+        }
+
+        function renderRoadmap() {
+            const rm = roadmapData;
+            document.getElementById('career-goal-display').textContent = rm.careerGoal || 'Set your dream career ✨';
+            document.getElementById('career-desc-display').textContent = rm.careerDescription || 'Click "Edit Goal" to set your dream!';
+            document.getElementById('main-progress').style.width = (rm.completionPercentage || 0) + '%';
+            document.getElementById('pct-label').textContent = (rm.completionPercentage || 0) + '%';
+            document.getElementById('completion-badge').textContent = `${rm.completionPercentage || 0}% Complete`;
+
+            const ms = rm.milestones || [];
+            let html = '';
+            categories.forEach(cat => {
+                const items = ms.filter(m => m.category === cat);
+                if (items.length === 0) return;
+                html += `<div class="category-section">
+        <div class="category-header">
+          <span class="category-icon">${catIcons[cat]}</span>
+          <div>
+            <div style="font-weight:700">${catLabels[cat]}</div>
+            <div style="font-size:12px;color:var(--text-muted)">${items.filter(m => m.isCompleted).length}/${items.length} completed</div>
+          </div>
+        </div>
+        <div class="timeline">
+          ${items.map(m => `
+            <div class="milestone-item">
+              <div class="milestone-dot ${m.isCompleted ? 'done' : ''}" onclick="toggleMilestone('${m._id}')">
+                ${m.isCompleted ? '✓' : ''}
+              </div>
+              <div class="milestone-card ${m.isCompleted ? 'done' : ''}" onclick="toggleMilestone('${m._id}')">
+                <div style="display:flex;align-items:center;gap:10px">
+                  <div style="flex:1">
+                    <div style="font-size:14px;font-weight:600;${m.isCompleted ? 'text-decoration:line-through;color:var(--text-muted)' : ''}">${m.title}</div>
+                    ${m.description ? `<div style="font-size:12px;color:var(--text-muted);margin-top:3px">${m.description}</div>` : ''}
+                    ${m.isCompleted ? `<div style="font-size:11px;color:var(--accent-green);margin-top:4px">✓ Completed · +30 XP earned</div>` : ''}
+                  </div>
+                  <input type="checkbox" ${m.isCompleted ? 'checked' : ''} style="pointer-events:none;width:18px;height:18px;accent-color:var(--primary)"/>
+                </div>
+              </div>
+            </div>`).join('')}
+        </div>
+      </div>`;
+            });
+            document.getElementById('milestones-container').innerHTML = html || '<div class="empty-state"><span class="emoji">🗺️</span><h3>No milestones yet</h3><p>Click "Add New Milestone" to start your journey!</p></div>';
+        }
+
+        async function toggleMilestone(milestoneId) {
+            try {
+                const res = await RoadmapAPI.toggleMilestone(milestoneId);
+                roadmapData = res.data;
+                renderRoadmap();
+                if (res.pointsAwardedForMilestone > 0) showToast(`+${res.pointsAwardedForMilestone} XP!`, 'Milestone completed! 🎉', 'success');
+            } catch (e) { showToast('Error', e.message, 'error'); }
+        }
+
+        function openGoalEditor() {
+            document.getElementById('goal-input').value = roadmapData?.careerGoal || '';
+            document.getElementById('goal-desc-input').value = roadmapData?.careerDescription || '';
+            document.getElementById('goal-modal').classList.add('open');
+        }
+
+        async function saveGoal() {
+            const goal = document.getElementById('goal-input').value.trim();
+            const desc = document.getElementById('goal-desc-input').value.trim();
+            if (!goal) return showToast('Required', 'Please enter your career goal', 'warning');
+            try {
+                const res = await RoadmapAPI.update({ careerGoal: goal, careerDescription: desc });
+                roadmapData = res.data;
+                renderRoadmap();
+                document.getElementById('goal-modal').classList.remove('open');
+                showToast('Goal saved!', `Your goal: ${goal} 🎯`, 'success');
+            } catch (e) { showToast('Error', e.message, 'error'); }
+        }
+
+        function openAddMilestone() { document.getElementById('ms-title').value = ''; document.getElementById('milestone-modal').classList.add('open'); }
+
+        async function addMilestone() {
+            const title = document.getElementById('ms-title').value.trim();
+            const category = document.getElementById('ms-category').value;
+            const description = document.getElementById('ms-desc').value.trim();
+            if (!title) return showToast('Required', 'Please enter a milestone title', 'warning');
+            try {
+                const newMs = { title, category, description, isCompleted: false, order: (roadmapData?.milestones?.length || 0) + 1 };
+                const milestones = [...(roadmapData?.milestones || []), newMs];
+                const res = await RoadmapAPI.update({ milestones });
+                roadmapData = res.data;
+                renderRoadmap();
+                document.getElementById('milestone-modal').classList.remove('open');
+                showToast('Milestone added!', `"${title}" added to your roadmap ✨`, 'success');
+            } catch (e) { showToast('Error', e.message, 'error'); }
+        }
+
+        [document.getElementById('goal-modal'), document.getElementById('milestone-modal')].forEach(m => {
+            m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+        });
+
+        init();
+    </script>
+</body>
+
+</html>

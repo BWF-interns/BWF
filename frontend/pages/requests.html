@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BWF — My Requests</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <style>
+        .request-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 18px 20px;
+            transition: var(--transition);
+        }
+
+        .request-card:hover {
+            border-color: var(--border-light);
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 12px;
+            border-radius: var(--radius-full);
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .status-pending {
+            background: rgba(245, 158, 11, 0.15);
+            color: #FCD34D;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .status-seen {
+            background: rgba(59, 130, 246, 0.15);
+            color: #93C5FD;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .status-in_progress {
+            background: rgba(108, 99, 255, 0.15);
+            color: var(--primary-light);
+            border: 1px solid rgba(108, 99, 255, 0.3);
+        }
+
+        .status-fulfilled {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34D399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .status-rejected {
+            background: rgba(239, 68, 68, 0.15);
+            color: #FCA5A5;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .urgency-urgent {
+            color: var(--accent-red);
+        }
+
+        .urgency-high {
+            color: var(--secondary);
+        }
+
+        .urgency-medium {
+            color: var(--text-secondary);
+        }
+
+        .urgency-low {
+            color: var(--text-muted);
+        }
+
+        .type-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: var(--radius-full);
+            background: var(--bg-surface);
+            font-size: 12px;
+            font-weight: 600;
+            border: 1px solid var(--border);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-layout">
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <div class="logo-icon">🌏</div>
+                <div class="logo-text">
+                    <h2>BWF Portal</h2>
+                    <p>My Requests</p>
+                </div>
+            </div>
+            <div class="sidebar-profile">
+                <div class="student-card">
+                    <div class="student-avatar" id="sb-avatar">--</div>
+                    <div class="student-info">
+                        <h4 id="sb-name">Loading...</h4>
+                        <p id="sb-class">--</p>
+                        <div class="student-badge" id="sb-level">⭐ Level 1</div>
+                    </div>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section-label">Main</div>
+                <a href="/dashboard" class="nav-link"><span class="nav-icon">🏠</span> Dashboard</a>
+                <a href="/profile" class="nav-link"><span class="nav-icon">👩‍🎓</span> My Profile</a>
+                <a href="/tasks" class="nav-link"><span class="nav-icon">✅</span> Daily Tasks</a>
+                <div class="nav-section-label">Learn & Grow</div>
+                <a href="/learning" class="nav-link"><span class="nav-icon">🎮</span> Learning Hub</a>
+                <a href="/roadmap" class="nav-link"><span class="nav-icon">🗺️</span> Career Roadmap</a>
+                <a href="/leaderboard" class="nav-link"><span class="nav-icon">🏆</span> Leaderboard</a>
+                <div class="nav-section-label">Community</div>
+                <a href="/gallery" class="nav-link"><span class="nav-icon">📸</span> Gallery &amp; Hall of Fame</a>
+                <a href="/requests" class="nav-link active"><span class="nav-icon">📋</span> My Requests</a>
+            </nav>
+            <div class="sidebar-bottom"><button class="logout-btn" onclick="AuthAPI.logout()"><span>🚪</span> Sign
+                    Out</button></div>
+        </aside>
+
+        <div class="main-content">
+            <header class="topbar">
+                <div style="display:flex;align-items:center;gap:14px">
+                    <button class="hamburger" id="hamburger">☰</button>
+                    <div class="topbar-left">
+                        <h1>📋 My Requests</h1>
+                        <p>Request medicine, food, clothing, or anything you need</p>
+                    </div>
+                </div>
+                <div class="topbar-right">
+                    <button class="btn btn-primary"
+                        onclick="document.getElementById('new-request-modal').classList.add('open')">+ New
+                        Request</button>
+                </div>
+            </header>
+
+            <div class="page-content fade-in">
+                <!-- Guide Banner -->
+                <div
+                    style="background:linear-gradient(135deg,rgba(16,185,129,0.1) 0%,rgba(59,130,246,0.08) 100%);border:1px solid rgba(16,185,129,0.25);border-radius:var(--radius-lg);padding:20px 24px;margin-bottom:24px;display:flex;align-items:center;gap:16px;">
+                    <div style="font-size:36px">💬</div>
+                    <div>
+                        <div style="font-weight:700;font-size:15px">Need something? Just ask!</div>
+                        <div style="font-size:13px;color:var(--text-secondary);margin-top:4px">Your housemother and
+                            teachers will see your request and get back to you as soon as possible. Don't hesitate —
+                            we're here to help!</div>
+                    </div>
+                </div>
+
+                <!-- Stats -->
+                <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:24px">
+                    <div class="stat-card">
+                        <div class="stat-icon gold">⏳</div>
+                        <div>
+                            <div class="stat-value" id="s-pending">0</div>
+                            <div class="stat-label">Pending</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon purple">🔄</div>
+                        <div>
+                            <div class="stat-value" id="s-progress">0</div>
+                            <div class="stat-label">In Progress</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon green">✅</div>
+                        <div>
+                            <div class="stat-value" id="s-fulfilled">0</div>
+                            <div class="stat-label">Fulfilled</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon blue">📊</div>
+                        <div>
+                            <div class="stat-value" id="s-total">0</div>
+                            <div class="stat-label">Total Requests</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Requests List -->
+                <div class="section-header">
+                    <h2>My Request History</h2>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:12px" id="requests-container">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Request Modal -->
+    <div class="modal-overlay" id="new-request-modal">
+        <div class="modal" style="position:relative">
+            <button class="modal-close"
+                onclick="document.getElementById('new-request-modal').classList.remove('open')">✕</button>
+            <div class="modal-title">📋 New Request</div>
+            <div class="modal-subtitle">Tell us what you need — we'll take care of it!</div>
+            <div class="form-group">
+                <label class="form-label">Type of Request</label>
+                <select class="form-control" id="req-type">
+                    <option value="medicine">💊 Medicine</option>
+                    <option value="food">🍎 Food</option>
+                    <option value="clothing">👗 Clothing</option>
+                    <option value="stationery">📝 Stationery</option>
+                    <option value="other">📦 Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Title / Item Name</label>
+                <input class="form-control" id="req-title" placeholder="e.g. Cough syrup, Winter jacket, Blue pen..." />
+            </div>
+            <div class="form-group">
+                <label class="form-label">Description</label>
+                <textarea class="form-control" id="req-desc"
+                    placeholder="Please describe your request in detail. For medicine, include symptoms. For clothing, include size if known."></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Quantity / Size (optional)</label>
+                <input class="form-control" id="req-qty" placeholder="e.g. 1 bottle, Size 38, 2 pairs..." />
+            </div>
+            <div class="form-group">
+                <label class="form-label">How urgent is this?</label>
+                <select class="form-control" id="req-urgency">
+                    <option value="low">🟢 Low — When convenient</option>
+                    <option value="medium" selected>🟡 Medium — Within a few days</option>
+                    <option value="high">🟠 High — This week</option>
+                    <option value="urgent">🔴 Urgent — As soon as possible!</option>
+                </select>
+            </div>
+            <button class="btn btn-primary btn-lg btn-block" onclick="submitRequest()">Submit Request 📤</button>
+        </div>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script>
+        requireStudent();
+        initSidebar();
+
+        const typeIcons = { medicine: '💊', food: '🍎', clothing: '👗', stationery: '📝', other: '📦' };
+        const statusIcons = { pending: '⏳', seen: '👀', in_progress: '🔄', fulfilled: '✅', rejected: '❌' };
+        const urgencyColors = { low: 'urgency-low', medium: 'urgency-medium', high: 'urgency-high', urgent: 'urgency-urgent' };
+
+        async function init() {
+            try {
+                const sRes = await StudentsAPI.me();
+                const s = sRes.data; const user = TokenManager.getUser();
+                document.getElementById('sb-avatar').textContent = getInitials(user.name);
+                document.getElementById('sb-name').textContent = user.name;
+                document.getElementById('sb-class').textContent = `${s.education?.currentClass || '--'} Class`;
+                document.getElementById('sb-level').textContent = `⭐ Level ${getLevel(s.totalPoints)}`;
+            } catch (e) { }
+            await loadRequests();
+        }
+
+        async function loadRequests() {
+            try {
+                const res = await RequestsAPI.mine();
+                const requests = res.data;
+                document.getElementById('s-total').textContent = requests.length;
+                document.getElementById('s-pending').textContent = requests.filter(r => r.status === 'pending' || r.status === 'seen').length;
+                document.getElementById('s-progress').textContent = requests.filter(r => r.status === 'in_progress').length;
+                document.getElementById('s-fulfilled').textContent = requests.filter(r => r.status === 'fulfilled').length;
+
+                document.getElementById('requests-container').innerHTML = requests.length
+                    ? requests.map(r => `
+          <div class="request-card">
+            <div style="display:flex;align-items:flex-start;gap:14px">
+              <div style="font-size:32px">${typeIcons[r.type] || '📦'}</div>
+              <div style="flex:1">
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+                  <span style="font-size:16px;font-weight:700">${r.title}</span>
+                  <span class="status-badge status-${r.status}">${statusIcons[r.status]} ${r.status.replace('_', ' ')}</span>
+                </div>
+                <div style="font-size:13px;color:var(--text-secondary);margin-bottom:8px">${r.description}</div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
+                  <span class="type-pill">${typeIcons[r.type]} ${r.type}</span>
+                  <span class="badge badge-${r.urgency === 'urgent' ? 'red' : r.urgency === 'high' ? 'gold' : 'blue'}">${r.urgency} urgency</span>
+                  ${r.quantity ? `<span class="badge badge-blue">Qty: ${r.quantity}</span>` : ''}
+                </div>
+                ${r.adminNotes ? `<div style="margin-top:10px;padding:10px 14px;background:rgba(108,99,255,0.08);border-radius:var(--radius-sm);border-left:3px solid var(--primary);font-size:13px;"><span style="font-weight:700">Staff note:</span> ${r.adminNotes}</div>` : ''}
+                <div style="font-size:11px;color:var(--text-muted);margin-top:8px">Submitted: ${new Date(r.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+              </div>
+            </div>
+          </div>`).join('')
+                    : '<div class="empty-state"><span class="emoji">📋</span><h3>No requests yet</h3><p>Click "New Request" to ask for what you need!</p></div>';
+            } catch (e) { document.getElementById('requests-container').innerHTML = '<div class="empty-state"><span class="emoji">😕</span><h3>Could not load requests</h3></div>'; }
+        }
+
+        async function submitRequest() {
+            const type = document.getElementById('req-type').value;
+            const title = document.getElementById('req-title').value.trim();
+            const description = document.getElementById('req-desc').value.trim();
+            const quantity = document.getElementById('req-qty').value.trim();
+            const urgency = document.getElementById('req-urgency').value;
+
+            if (!title || !description) return showToast('Required', 'Please fill in title and description', 'warning');
+            try {
+                await RequestsAPI.create({ type, title, description, quantity, urgency });
+                document.getElementById('new-request-modal').classList.remove('open');
+                document.getElementById('req-title').value = ''; document.getElementById('req-desc').value = ''; document.getElementById('req-qty').value = '';
+                showToast('Request Submitted! 📤', 'Your housemother has been notified. We\'ll take care of it!', 'success');
+                await loadRequests();
+            } catch (e) { showToast('Error', e.message, 'error'); }
+        }
+
+        document.getElementById('new-request-modal').addEventListener('click', e => { if (e.target.id === 'new-request-modal') e.target.classList.remove('open'); });
+        init();
+    </script>
+</body>
+
+</html>

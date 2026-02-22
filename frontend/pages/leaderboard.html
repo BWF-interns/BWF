@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BWF — Leaderboard</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <style>
+        .podium {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 16px;
+            margin: 24px 0 40px;
+        }
+
+        .podium-item {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .podium-avatar {
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            margin: 0 auto 8px;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .podium-rank {
+            font-size: 28px;
+        }
+
+        .podium-name {
+            font-size: 14px;
+            font-weight: 700;
+            margin-top: 4px;
+        }
+
+        .podium-pts {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .podium-stand {
+            border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+            margin-top: 8px;
+            width: 96px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .lb-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 16px;
+            border-radius: var(--radius-md);
+            transition: var(--transition);
+            border: 1px solid transparent;
+        }
+
+        .lb-row:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--border);
+        }
+
+        .lb-row.me {
+            background: rgba(108, 99, 255, 0.08);
+            border-color: rgba(108, 99, 255, 0.3);
+        }
+
+        .lb-rank {
+            width: 32px;
+            text-align: center;
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--text-muted);
+        }
+
+        .lb-pts {
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--secondary);
+            margin-left: auto;
+        }
+
+        .lb-level {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-layout">
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <div class="logo-icon">🌏</div>
+                <div class="logo-text">
+                    <h2>BWF Portal</h2>
+                    <p>Leaderboard</p>
+                </div>
+            </div>
+            <div class="sidebar-profile">
+                <div class="student-card">
+                    <div class="student-avatar" id="sb-avatar">--</div>
+                    <div class="student-info">
+                        <h4 id="sb-name">Loading...</h4>
+                        <p id="sb-class">--</p>
+                        <div class="student-badge" id="sb-level">⭐ Level 1</div>
+                    </div>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section-label">Main</div>
+                <a href="/dashboard" class="nav-link"><span class="nav-icon">🏠</span> Dashboard</a>
+                <a href="/profile" class="nav-link"><span class="nav-icon">👩‍🎓</span> My Profile</a>
+                <a href="/tasks" class="nav-link"><span class="nav-icon">✅</span> Daily Tasks</a>
+                <div class="nav-section-label">Learn & Grow</div>
+                <a href="/learning" class="nav-link"><span class="nav-icon">🎮</span> Learning Hub</a>
+                <a href="/roadmap" class="nav-link"><span class="nav-icon">🗺️</span> Career Roadmap</a>
+                <a href="/leaderboard" class="nav-link active"><span class="nav-icon">🏆</span> Leaderboard</a>
+                <div class="nav-section-label">Community</div>
+                <a href="/gallery" class="nav-link"><span class="nav-icon">📸</span> Gallery &amp; Hall of Fame</a>
+                <a href="/requests" class="nav-link"><span class="nav-icon">📋</span> My Requests</a>
+            </nav>
+            <div class="sidebar-bottom"><button class="logout-btn" onclick="AuthAPI.logout()"><span>🚪</span> Sign
+                    Out</button></div>
+        </aside>
+
+        <div class="main-content">
+            <header class="topbar">
+                <div style="display:flex;align-items:center;gap:14px">
+                    <button class="hamburger" id="hamburger">☰</button>
+                    <div class="topbar-left">
+                        <h1>🏆 Leaderboard</h1>
+                        <p>See who's topping the charts this week!</p>
+                    </div>
+                </div>
+                <div class="topbar-right">
+                    <div class="level-badge" id="my-rank-badge">Your Rank: #--</div>
+                </div>
+            </header>
+
+            <div class="page-content fade-in">
+                <!-- Podium -->
+                <div class="card" style="margin-bottom:24px">
+                    <div class="card-header">
+                        <div class="card-title">🎖️ Top 3 Champions</div>
+                    </div>
+                    <div class="podium" id="podium-section">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+
+                <!-- My Rank Banner -->
+                <div id="my-rank-card"
+                    style="display:none;background:linear-gradient(135deg,rgba(108,99,255,0.2) 0%,rgba(236,72,153,0.15) 100%);border:1px solid rgba(108,99,255,0.4);border-radius:var(--radius-lg);padding:20px 24px;margin-bottom:20px;display:flex;align-items:center;gap:16px;">
+                    <div style="font-size:36px">🌟</div>
+                    <div>
+                        <div style="font-size:16px;font-weight:700">Your Position</div>
+                        <div style="font-size:14px;color:var(--text-secondary);margin-top:2px" id="my-rank-text">
+                            Calculating your rank...</div>
+                    </div>
+                </div>
+
+                <!-- Full Leaderboard -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">📊 Full Rankings</div>
+                    </div>
+                    <div id="full-leaderboard">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script>
+        requireStudent();
+        initSidebar();
+
+        async function init() {
+            try {
+                const sRes = await StudentsAPI.me();
+                const s = sRes.data;
+                const user = TokenManager.getUser();
+                document.getElementById('sb-avatar').textContent = getInitials(user.name);
+                document.getElementById('sb-name').textContent = user.name;
+                document.getElementById('sb-class').textContent = `${s.education?.currentClass || '--'} Class`;
+                document.getElementById('sb-level').textContent = `⭐ Level ${getLevel(s.totalPoints)}`;
+            } catch (e) { }
+
+            try {
+                const res = await LeaderboardAPI.get(20);
+                const { data: board, myRank } = res;
+
+                // Podium (top 3)
+                if (board.length >= 3) {
+                    // Order: 2nd, 1st, 3rd for visual podium shape
+                    const order = [board[1], board[0], board[2]];
+                    const heights = ['120px', '152px', '96px'];
+                    const colors = ['rgba(156,163,175,0.3)', 'rgba(245,158,11,0.3)', 'rgba(205,127,50,0.3)'];
+                    const avatarSizes = ['64px', '80px', '56px'];
+                    const avatarFonts = ['24px', '32px', '20px'];
+                    const medals = ['🥈', '🥇', '🥉'];
+
+                    document.getElementById('podium-section').innerHTML = order.map((s, i) => `
+          <div class="podium-item">
+            <div style="font-size:20px">${medals[i]}</div>
+            <div class="podium-avatar" style="width:${avatarSizes[i]};height:${avatarSizes[i]};font-size:${avatarFonts[i]};background:var(--grad-primary)">${getInitials(s.name)}</div>
+            <div class="podium-name">${s.name.split(' ')[0]}</div>
+            <div class="podium-pts">⭐ ${s.totalPoints} XP</div>
+            <div class="podium-stand" style="height:${heights[i]};background:${colors[i]}">
+              #${s.rank}
+            </div>
+          </div>`).join('');
+                }
+
+                // My Rank Banner
+                if (myRank) {
+                    document.getElementById('my-rank-card').style.display = 'flex';
+                    document.getElementById('my-rank-badge').textContent = `Your Rank: #${myRank.rank}`;
+                    document.getElementById('my-rank-text').textContent = `You are ranked #${myRank.rank} with ${myRank.totalPoints} XP · Level ${myRank.level}. Keep studying to climb higher! 🚀`;
+                }
+
+                const myName = TokenManager.getUser()?.name;
+                document.getElementById('full-leaderboard').innerHTML = board.map(s => {
+                    const isMe = s.name === myName;
+                    const medals = { 1: '🥇', 2: '🥈', 3: '🥉' };
+                    return `
+          <div class="lb-row ${isMe ? 'me' : ''}">
+            <div class="lb-rank">${medals[s.rank] || '#' + s.rank}</div>
+            <div class="avatar-placeholder" style="width:40px;height:40px;font-size:14px;font-weight:700">${getInitials(s.name)}</div>
+            <div style="flex:1">
+              <div style="font-size:14px;font-weight:600">${s.name}${isMe ? ' <span style="font-size:11px;color:var(--primary-light)">(You)</span>' : ''}</div>
+              <div class="lb-level">⭐ Level ${s.level} · ${s.education || 'Student'} · 🔥 ${s.streak} day streak</div>
+            </div>
+            <div class="lb-pts">${s.totalPoints.toLocaleString()} XP</div>
+          </div>`;
+                }).join('') || '<div class="empty-state"><span class="emoji">🏆</span><h3>No rankings yet</h3><p>Start learning to appear on the board!</p></div>';
+
+            } catch (e) { showToast('Error', 'Could not load leaderboard', 'error'); }
+        }
+
+        init();
+    </script>
+</body>
+
+</html>

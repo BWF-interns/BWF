@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BWF — My Dashboard</title>
+    <link rel="stylesheet" href="/css/style.css" />
+</head>
+
+<body>
+    <div class="app-layout">
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+        <!-- SIDEBAR -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <div class="logo-icon">🌏</div>
+                <div class="logo-text">
+                    <h2>BWF Portal</h2>
+                    <p>Student Dashboard</p>
+                </div>
+            </div>
+            <div class="sidebar-profile">
+                <div class="student-card">
+                    <div class="student-avatar" id="sb-avatar">--</div>
+                    <div class="student-info">
+                        <h4 id="sb-name">Loading...</h4>
+                        <p id="sb-class">--</p>
+                        <div class="student-badge" id="sb-level">⭐ Level 1</div>
+                    </div>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section-label">Main</div>
+                <a href="/dashboard" class="nav-link active"><span class="nav-icon">🏠</span> Dashboard</a>
+                <a href="/profile" class="nav-link"><span class="nav-icon">👩‍🎓</span> My Profile</a>
+                <a href="/tasks" class="nav-link"><span class="nav-icon">✅</span> Daily Tasks</a>
+                <div class="nav-section-label">Learn & Grow</div>
+                <a href="/learning" class="nav-link"><span class="nav-icon">🎮</span> Learning Hub</a>
+                <a href="/roadmap" class="nav-link"><span class="nav-icon">🗺️</span> Career Roadmap</a>
+                <a href="/leaderboard" class="nav-link"><span class="nav-icon">🏆</span> Leaderboard</a>
+                <div class="nav-section-label">Community</div>
+                <a href="/gallery" class="nav-link"><span class="nav-icon">📸</span> Gallery &amp; Hall of Fame</a>
+                <a href="/requests" class="nav-link"><span class="nav-icon">📋</span> My Requests</a>
+            </nav>
+            <div class="sidebar-bottom">
+                <button class="logout-btn" onclick="AuthAPI.logout()"><span>🚪</span> Sign Out</button>
+            </div>
+        </aside>
+
+        <div class="main-content">
+            <!-- TOPBAR -->
+            <header class="topbar">
+                <div style="display:flex;align-items:center;gap:14px">
+                    <button class="hamburger" id="hamburger">☰</button>
+                    <div class="topbar-left">
+                        <h1 id="greeting">Good morning! 🌟</h1>
+                        <p id="topbar-date">Loading date...</p>
+                    </div>
+                </div>
+                <div class="topbar-right">
+                    <button class="topbar-btn" id="notif-btn" title="Notifications">
+                        🔔
+                        <span class="notification-dot" id="notif-dot" style="display:none"></span>
+                    </button>
+                    <span class="streak-badge" id="streak-badge">🔥 0 day streak</span>
+                </div>
+            </header>
+
+            <div class="page-content fade-in">
+
+                <!-- Welcome Hero Card -->
+                <div
+                    style="background:linear-gradient(135deg,rgba(108,99,255,0.2) 0%,rgba(236,72,153,0.15) 100%);border:1px solid rgba(108,99,255,0.3);border-radius:var(--radius-xl);padding:28px 32px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
+                    <div>
+                        <h2 style="font-family:'Outfit',sans-serif;font-size:24px;font-weight:900;" id="hero-name">
+                            Welcome back, Star! ✨</h2>
+                        <p style="color:var(--text-secondary);margin-top:6px;" id="hero-subtitle">Keep going — every
+                            effort counts on your journey!</p>
+                        <div style="display:flex;align-items:center;gap:12px;margin-top:16px;">
+                            <div class="level-badge" id="hero-level">⭐ Level 1</div>
+                            <div style="flex:1;max-width:200px;">
+                                <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;" id="xp-label">0 /
+                                    100 XP to Level 2</div>
+                                <div class="progress-bar-wrap">
+                                    <div class="progress-bar-fill" id="xp-bar" style="width:0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="font-size:90px;line-height:1;" id="hero-emoji">🌟</div>
+                </div>
+
+                <!-- Stats Grid -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon purple">🏅</div>
+                        <div>
+                            <div class="stat-value" id="stat-points">0</div>
+                            <div class="stat-label">Total XP Points</div>
+                            <div class="stat-change" id="stat-level">Level 1</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon gold">🔥</div>
+                        <div>
+                            <div class="stat-value" id="stat-streak">0</div>
+                            <div class="stat-label">Day Streak</div>
+                            <div class="stat-change">Keep it going! 💪</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon green">✅</div>
+                        <div>
+                            <div class="stat-value" id="stat-tasks">0/0</div>
+                            <div class="stat-label">Tasks Today</div>
+                            <div class="stat-change" id="stat-tasks-pct">0% complete</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon pink">📋</div>
+                        <div>
+                            <div class="stat-value" id="stat-requests">0</div>
+                            <div class="stat-label">Pending Requests</div>
+                            <div class="stat-change"><a href="/requests"
+                                    style="color:var(--accent-green);text-decoration:none;">View all →</a></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Two Columns -->
+                <div class="grid-2" style="align-items:start">
+
+                    <!-- Today's Tasks Quick View -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">✅ Today's Tasks</div>
+                                <div class="card-subtitle">Complete tasks to earn XP</div>
+                            </div>
+                            <a href="/tasks" class="btn btn-secondary btn-sm">See all</a>
+                        </div>
+                        <div id="tasks-list">
+                            <div class="spinner"></div>
+                        </div>
+                    </div>
+
+                    <!-- Learning Progress -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">🎮 Learning Hub</div>
+                                <div class="card-subtitle">Your topic progress</div>
+                            </div>
+                            <a href="/learning" class="btn btn-secondary btn-sm">Explore</a>
+                        </div>
+                        <div id="topics-list">
+                            <div class="spinner"></div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Leaderboard Peek + Roadmap Progress -->
+                <div class="grid-2" style="margin-top:20px;align-items:start">
+
+                    <!-- Top 3 Leaderboard -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">🏆 Top Students</div>
+                                <div class="card-subtitle">Global leaderboard</div>
+                            </div>
+                            <a href="/leaderboard" class="btn btn-secondary btn-sm">Full board</a>
+                        </div>
+                        <div id="leaderboard-peek">
+                            <div class="spinner"></div>
+                        </div>
+                    </div>
+
+                    <!-- Roadmap progress -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">🗺️ Career Roadmap</div>
+                                <div class="card-subtitle" id="roadmap-goal">Set your career goal</div>
+                            </div>
+                            <a href="/roadmap" class="btn btn-secondary btn-sm">View</a>
+                        </div>
+                        <div id="roadmap-peek">
+                            <div class="spinner"></div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Panel -->
+    <div class="modal-overlay" id="notif-modal">
+        <div class="modal" style="position:relative">
+            <div class="modal-title">🔔 Notifications</div>
+            <div class="modal-subtitle">Your latest alerts</div>
+            <button class="modal-close" onclick="closeNotif()">✕</button>
+            <div id="notif-list">
+                <div class="spinner"></div>
+            </div>
+            <button class="btn btn-secondary btn-sm btn-block" style="margin-top:12px" onclick="markAllRead()">Mark all
+                as read</button>
+        </div>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script>
+        requireStudent();
+        initSidebar();
+
+        const today = new Date();
+        const hours = today.getHours();
+        const greeting = hours < 12 ? 'Good morning' : hours < 17 ? 'Good afternoon' : 'Good evening';
+        document.getElementById('topbar-date').textContent = today.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+        async function loadDashboard() {
+            try {
+                // Load student profile
+                const studentRes = await StudentsAPI.me();
+                const s = studentRes.data;
+                const user = TokenManager.getUser();
+                const firstName = user.name.split(' ')[0];
+                const initials = getInitials(user.name);
+                const level = getLevel(s.totalPoints);
+                const nextLvl = getNextLevelPoints(s.totalPoints);
+                const prevLvl = getNextLevelPoints(s.totalPoints - 1) === nextLvl ? 0 : getNextLevelPoints(s.totalPoints - 50);
+                const xpPct = Math.min(100, Math.round(((s.totalPoints) / nextLvl) * 100));
+
+                document.getElementById('sb-avatar').textContent = initials;
+                document.getElementById('sb-name').textContent = user.name;
+                document.getElementById('sb-class').textContent = `${s.education?.currentClass || '--'} Class`;
+                document.getElementById('sb-level').textContent = `⭐ Level ${level}`;
+                document.getElementById('streak-badge').textContent = `🔥 ${s.streak} day streak`;
+                document.getElementById('greeting').textContent = `${greeting}, ${firstName}! 🌟`;
+                document.getElementById('hero-name').textContent = `Welcome back, ${firstName}! ✨`;
+                document.getElementById('hero-subtitle').textContent = s.careerGoal ? `Future ${s.careerGoal} — you're doing amazing! 💪` : 'Keep going — every effort counts on your journey!';
+                document.getElementById('hero-level').textContent = `⭐ Level ${level}`;
+                document.getElementById('xp-label').textContent = `${s.totalPoints} / ${nextLvl} XP to Level ${level + 1}`;
+                document.getElementById('xp-bar').style.width = xpPct + '%';
+                document.getElementById('stat-points').textContent = s.totalPoints.toLocaleString();
+                document.getElementById('stat-level').textContent = `⭐ Level ${level}`;
+                document.getElementById('stat-streak').textContent = s.streak;
+                const heroes = ['🌟', '🚀', '💫', '🌸', '✨', '🏅', '🎯', '🦋'];
+                document.getElementById('hero-emoji').textContent = heroes[level % heroes.length];
+
+            } catch (e) { console.error(e); }
+
+            // Load Tasks
+            try {
+                const tasksRes = await TasksAPI.today();
+                const { data: tasks, completedToday, totalTasks } = tasksRes;
+                document.getElementById('stat-tasks').textContent = `${completedToday}/${totalTasks}`;
+                document.getElementById('stat-tasks-pct').textContent = `${totalTasks ? Math.round((completedToday / totalTasks) * 100) : 0}% complete`;
+
+                const taskHtml = tasks.slice(0, 4).map(t => `
+        <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);">
+          <div style="font-size:22px">${t.icon}</div>
+          <div style="flex:1">
+            <div style="font-size:14px;font-weight:600;${t.isCompletedToday ? 'text-decoration:line-through;color:var(--text-muted)' : ''}">${t.title}</div>
+            <div style="font-size:12px;color:var(--text-muted)">+${t.pointsReward} XP</div>
+          </div>
+          ${t.isCompletedToday ? '<span class="badge badge-green">Done ✓</span>' : '<span class="badge badge-purple">Pending</span>'}
+        </div>
+      `).join('');
+                document.getElementById('tasks-list').innerHTML = taskHtml || '<div class="empty-state"><span class="emoji">✅</span><h3>All done!</h3></div>';
+            } catch (e) { }
+
+            // Load Topics
+            try {
+                const topicsRes = await TopicsAPI.list();
+                const topics = topicsRes.data.slice(0, 4);
+                document.getElementById('topics-list').innerHTML = topics.map(t => {
+                    const pct = t.progress?.status === 'completed' ? 100 : t.progress?.status === 'in_progress' ? 40 : 0;
+                    return `
+          <div style="margin-bottom:16px;" onclick="window.location.href='/learning'" style="cursor:pointer">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+              <span style="font-size:20px">${t.icon}</span>
+              <div style="flex:1">
+                <div style="font-size:13px;font-weight:600">${t.title}</div>
+                <div style="font-size:11px;color:var(--text-muted)">${t.category}</div>
+              </div>
+              <span class="badge ${t.progress?.status === 'completed' ? 'badge-green' : t.progress?.status === 'in_progress' ? 'badge-purple' : 'badge-blue'}">${t.progress?.status === 'completed' ? '✓ Done' : t.progress?.status === 'in_progress' ? 'In Progress' : 'Start'}</span>
+            </div>
+            <div class="progress-bar-wrap">
+              <div class="progress-bar-fill ${t.progress?.status === 'completed' ? 'green' : ''}" style="width:${pct}%"></div>
+            </div>
+          </div>`;
+                }).join('') || '<div class="empty-state"><span class="emoji">📚</span><h3>No topics yet</h3></div>';
+            } catch (e) { }
+
+            // Load Leaderboard peek
+            try {
+                const lbRes = await LeaderboardAPI.get(5);
+                const myRank = lbRes.myRank;
+                let lbHtml = lbRes.data.slice(0, 5).map((s, i) => {
+                    const medals = ['🥇', '🥈', '🥉'];
+                    return `
+          <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
+            <div style="font-size:20px;width:28px;text-align:center">${medals[i] || `<span style="color:var(--text-muted);font-size:14px;font-weight:700">#${i + 1}</span>`}</div>
+            <div class="avatar-placeholder" style="width:36px;height:36px;font-size:13px;font-weight:700">${getInitials(s.name)}</div>
+            <div style="flex:1">
+              <div style="font-size:13px;font-weight:600">${s.name}</div>
+              <div style="font-size:11px;color:var(--text-muted)">Level ${s.level} · ${s.education}</div>
+            </div>
+            <div style="font-size:14px;font-weight:800;color:var(--secondary)">${s.totalPoints} XP</div>
+          </div>`;
+                }).join('');
+                if (myRank) lbHtml += `<div style="font-size:13px;color:var(--text-muted);padding-top:12px;text-align:center">Your rank: <strong style="color:var(--primary-light)">#${myRank.rank}</strong></div>`;
+                document.getElementById('leaderboard-peek').innerHTML = lbHtml;
+            } catch (e) { }
+
+            // Load Roadmap peek
+            try {
+                const rmRes = await RoadmapAPI.me();
+                const rm = rmRes.data;
+                document.getElementById('roadmap-goal').textContent = rm.careerGoal || 'Set your career goal';
+                const total = rm.milestones?.length || 0;
+                const done = rm.milestones?.filter(m => m.isCompleted).length || 0;
+                document.getElementById('roadmap-peek').innerHTML = `
+        <div style="margin-bottom:16px">
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px">
+            <span style="color:var(--text-secondary)">Overall Progress</span>
+            <strong>${rm.completionPercentage || 0}%</strong>
+          </div>
+          <div class="progress-bar-wrap" style="height:12px">
+            <div class="progress-bar-fill" style="width:${rm.completionPercentage || 0}%"></div>
+          </div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:6px">${done} of ${total} milestones completed</div>
+        </div>
+        ${(rm.milestones || []).slice(0, 4).map(m => `
+          <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+            <span style="font-size:16px">${m.isCompleted ? '✅' : '⬜'}</span>
+            <div>
+              <div style="font-size:13px;font-weight:500;${m.isCompleted ? 'text-decoration:line-through;color:var(--text-muted)' : ''}">${m.title}</div>
+              <div style="font-size:11px;color:var(--text-muted)">${m.category.replace('_', ' ')}</div>
+            </div>
+          </div>`).join('')}
+        <a href="/roadmap" class="btn btn-secondary btn-sm btn-block" style="margin-top:12px">View Full Roadmap →</a>
+      `;
+            } catch (e) { }
+
+            // Load Requests
+            try {
+                const reqRes = await RequestsAPI.mine();
+                const pending = reqRes.data.filter(r => r.status === 'pending' || r.status === 'seen').length;
+                document.getElementById('stat-requests').textContent = pending;
+            } catch (e) { }
+
+            // Load Notifications
+            try {
+                const notifRes = await NotificationsAPI.mine();
+                if (notifRes.unreadCount > 0) {
+                    document.getElementById('notif-dot').style.display = 'block';
+                }
+            } catch (e) { }
+        }
+
+        document.getElementById('notif-btn').addEventListener('click', async () => {
+            document.getElementById('notif-modal').classList.add('open');
+            try {
+                const res = await NotificationsAPI.mine();
+                document.getElementById('notif-list').innerHTML = res.data.length
+                    ? res.data.map(n => `
+          <div style="padding:12px 0;border-bottom:1px solid var(--border);${!n.isRead ? 'opacity:1' : 'opacity:0.6'}">
+            <div style="display:flex;gap:10px;align-items:flex-start">
+              <span style="font-size:20px">${n.icon}</span>
+              <div>
+                <div style="font-size:14px;font-weight:600">${n.title}</div>
+                <div style="font-size:12px;color:var(--text-muted);margin-top:2px">${n.message}</div>
+                <div style="font-size:11px;color:var(--text-muted);margin-top:4px">${new Date(n.createdAt).toLocaleDateString('en-IN')}</div>
+              </div>
+              ${!n.isRead ? '<span class="badge badge-purple" style="margin-left:auto;flex-shrink:0">New</span>' : ''}
+            </div>
+          </div>`).join('')
+                    : '<div class="empty-state"><span class="emoji">🔔</span><h3>All caught up!</h3></div>';
+            } catch (e) { }
+        });
+
+        function closeNotif() { document.getElementById('notif-modal').classList.remove('open'); }
+        document.getElementById('notif-modal').addEventListener('click', e => { if (e.target.id === 'notif-modal') closeNotif(); });
+
+        async function markAllRead() {
+            await NotificationsAPI.readAll();
+            document.getElementById('notif-dot').style.display = 'none';
+            closeNotif();
+            showToast('All read', 'All notifications marked as read', 'success');
+        }
+
+        loadDashboard();
+    </script>
+</body>
+
+</html>

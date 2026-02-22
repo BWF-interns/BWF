@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BWF — Daily Tasks</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <style>
+        .task-card {
+            background: var(--bg-card);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: var(--transition-spring);
+            cursor: pointer;
+        }
+
+        .task-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--border-light);
+            box-shadow: var(--shadow-md);
+        }
+
+        .task-card.completed {
+            opacity: 0.65;
+        }
+
+        .task-card.completing {
+            animation: taskComplete 0.5s ease;
+        }
+
+        @keyframes taskComplete {
+            0% {
+                transform: scale(1)
+            }
+
+            50% {
+                transform: scale(1.04)
+            }
+
+            100% {
+                transform: scale(1)
+            }
+        }
+
+        .task-emoji {
+            font-size: 32px;
+            flex-shrink: 0;
+        }
+
+        .task-check {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: var(--transition);
+            margin-left: auto;
+        }
+
+        .task-check.done {
+            background: var(--accent-green);
+            border-color: var(--accent-green);
+            color: white;
+        }
+
+        .progress-ring {
+            margin: 0 auto 24px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-layout">
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <div class="logo-icon">🌏</div>
+                <div class="logo-text">
+                    <h2>BWF Portal</h2>
+                    <p>Daily Tasks</p>
+                </div>
+            </div>
+            <div class="sidebar-profile">
+                <div class="student-card">
+                    <div class="student-avatar" id="sb-avatar">--</div>
+                    <div class="student-info">
+                        <h4 id="sb-name">Loading...</h4>
+                        <p id="sb-class">--</p>
+                        <div class="student-badge" id="sb-level">⭐ Level 1</div>
+                    </div>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section-label">Main</div>
+                <a href="/dashboard" class="nav-link"><span class="nav-icon">🏠</span> Dashboard</a>
+                <a href="/profile" class="nav-link"><span class="nav-icon">👩‍🎓</span> My Profile</a>
+                <a href="/tasks" class="nav-link active"><span class="nav-icon">✅</span> Daily Tasks</a>
+                <div class="nav-section-label">Learn & Grow</div>
+                <a href="/learning" class="nav-link"><span class="nav-icon">🎮</span> Learning Hub</a>
+                <a href="/roadmap" class="nav-link"><span class="nav-icon">🗺️</span> Career Roadmap</a>
+                <a href="/leaderboard" class="nav-link"><span class="nav-icon">🏆</span> Leaderboard</a>
+                <div class="nav-section-label">Community</div>
+                <a href="/gallery" class="nav-link"><span class="nav-icon">📸</span> Gallery &amp; Hall of Fame</a>
+                <a href="/requests" class="nav-link"><span class="nav-icon">📋</span> My Requests</a>
+            </nav>
+            <div class="sidebar-bottom"><button class="logout-btn" onclick="AuthAPI.logout()"><span>🚪</span> Sign
+                    Out</button></div>
+        </aside>
+
+        <div class="main-content">
+            <header class="topbar">
+                <div style="display:flex;align-items:center;gap:14px">
+                    <button class="hamburger" id="hamburger">☰</button>
+                    <div class="topbar-left">
+                        <h1>✅ Daily Tasks</h1>
+                        <p id="today-date">Complete your tasks to earn XP and keep your streak!</p>
+                    </div>
+                </div>
+                <div class="topbar-right">
+                    <span class="streak-badge" id="streak-badge">🔥 0 day streak</span>
+                </div>
+            </header>
+
+            <div class="page-content fade-in">
+                <!-- Progress Summary -->
+                <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:24px">
+                    <div class="stat-card">
+                        <div class="stat-icon green">✅</div>
+                        <div>
+                            <div class="stat-value" id="done-count">0</div>
+                            <div class="stat-label">Completed Today</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon purple">📋</div>
+                        <div>
+                            <div class="stat-value" id="total-count">0</div>
+                            <div class="stat-label">Total Tasks</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon gold">⭐</div>
+                        <div>
+                            <div class="stat-value" id="xp-earned">0</div>
+                            <div class="stat-label">XP from Tasks Today</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Daily Progress Bar -->
+                <div class="card" style="margin-bottom:24px">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+                        <span style="font-size:15px;font-weight:700">Today's Progress</span>
+                        <span id="pct-text" style="font-size:15px;font-weight:800;color:var(--primary-light)">0%</span>
+                    </div>
+                    <div class="progress-bar-wrap" style="height:14px">
+                        <div class="progress-bar-fill" id="daily-progress" style="width:0%"></div>
+                    </div>
+                    <div style="font-size:12px;color:var(--text-muted);margin-top:8px" id="progress-msg">Start
+                        completing tasks to earn your daily XP! 💪</div>
+                </div>
+
+                <!-- Tasks List -->
+                <div class="section-header">
+                    <h2>📋 Your Tasks for Today</h2>
+                    <p id="task-date"></p>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:12px" id="tasks-container">
+                    <div class="spinner"></div>
+                </div>
+
+                <!-- All Done State -->
+                <div id="all-done-banner"
+                    style="display:none;text-align:center;padding:40px;background:linear-gradient(135deg,rgba(16,185,129,0.15) 0%,rgba(108,99,255,0.1) 100%);border:1px solid rgba(16,185,129,0.3);border-radius:var(--radius-xl);margin-top:24px">
+                    <div style="font-size:64px">🎉</div>
+                    <div style="font-size:22px;font-weight:900;font-family:'Outfit',sans-serif;margin-top:12px">All
+                        Tasks Complete!</div>
+                    <div style="color:var(--text-secondary);margin-top:8px">You're amazing! Come back tomorrow for more
+                        tasks. Keep your streak going! 🔥</div>
+                    <a href="/learning" class="btn btn-primary btn-lg" style="margin-top:20px">Go Learn Something New
+                        🎮</a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script>
+        requireStudent();
+        initSidebar();
+
+        let totalXP = 0;
+
+        document.getElementById('task-date').textContent = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' });
+        document.getElementById('today-date').textContent = `${new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' })} — Complete your tasks to earn XP!`;
+
+        async function init() {
+            try {
+                const sRes = await StudentsAPI.me();
+                const s = sRes.data; const user = TokenManager.getUser();
+                document.getElementById('sb-avatar').textContent = getInitials(user.name);
+                document.getElementById('sb-name').textContent = user.name;
+                document.getElementById('sb-class').textContent = `${s.education?.currentClass || '--'} Class`;
+                document.getElementById('sb-level').textContent = `⭐ Level ${getLevel(s.totalPoints)}`;
+                document.getElementById('streak-badge').textContent = `🔥 ${s.streak} day streak`;
+            } catch (e) { }
+            await loadTasks();
+        }
+
+        async function loadTasks() {
+            try {
+                const res = await TasksAPI.today();
+                const { data: tasks, completedToday, totalTasks } = res;
+                const pct = totalTasks ? Math.round((completedToday / totalTasks) * 100) : 0;
+
+                document.getElementById('done-count').textContent = completedToday;
+                document.getElementById('total-count').textContent = totalTasks;
+                document.getElementById('pct-text').textContent = pct + '%';
+                document.getElementById('daily-progress').style.width = pct + '%';
+
+                const msgs = [
+                    'Start completing tasks to earn your daily XP! 💪',
+                    'Great start! Keep going! 🌟',
+                    'You\'re halfway there! Amazing! ✨',
+                    'Almost done! You\'re a champion! 🏆',
+                    'You completed all tasks! You\'re incredible! 🎉'
+                ];
+                const msgIdx = Math.min(4, Math.floor(pct / 25));
+                document.getElementById('progress-msg').textContent = msgs[msgIdx];
+
+                // Estimate XP earned
+                totalXP = tasks.filter(t => t.isCompletedToday).reduce((sum, t) => sum + t.pointsReward, 0);
+                document.getElementById('xp-earned').textContent = totalXP;
+
+                if (completedToday === totalTasks && totalTasks > 0) {
+                    document.getElementById('all-done-banner').style.display = 'block';
+                }
+
+                const catColors = { study: 'purple', hygiene: 'blue', exercise: 'green', social_work: 'pink', reading: 'gold', prayer: 'purple', chores: 'green' };
+                document.getElementById('tasks-container').innerHTML = tasks.map(t => `
+        <div class="task-card ${t.isCompletedToday ? 'completed' : ''}" id="task-${t._id}" onclick="completeTask('${t._id}', ${t.pointsReward}, '${t.title}')">
+          <div class="task-emoji">${t.icon}</div>
+          <div style="flex:1">
+            <div style="font-size:15px;font-weight:700;${t.isCompletedToday ? 'text-decoration:line-through;color:var(--text-muted)' : ''}">${t.title}</div>
+            <div style="font-size:13px;color:var(--text-muted);margin-top:2px">${t.description || ''}</div>
+            <div style="margin-top:8px;display:flex;align-items:center;gap:8px">
+              <span class="badge badge-${catColors[t.category] || 'purple'}">${t.category.replace('_', ' ')}</span>
+              <span class="badge badge-gold">+${t.pointsReward} XP</span>
+              ${t.dueTime ? `<span style="font-size:11px;color:var(--text-muted)">⏰ By ${t.dueTime}</span>` : ''}
+            </div>
+          </div>
+          <div class="task-check ${t.isCompletedToday ? 'done' : ''}">
+            ${t.isCompletedToday ? '✓' : ''}
+          </div>
+        </div>`).join('') || '<div class="empty-state"><span class="emoji">✅</span><h3>No tasks today</h3><p>Check back later!</p></div>';
+
+            } catch (e) { document.getElementById('tasks-container').innerHTML = '<div class="empty-state"><span class="emoji">😕</span><h3>Could not load tasks</h3></div>'; }
+        }
+
+        async function completeTask(id, points, title) {
+            const card = document.getElementById(`task-${id}`);
+            if (card.classList.contains('completed')) return;
+            try {
+                card.classList.add('completing');
+                const res = await TasksAPI.complete(id);
+                card.classList.add('completed');
+                card.querySelector('.task-check').classList.add('done');
+                card.querySelector('.task-check').textContent = '✓';
+                card.querySelector('[style*="font-weight:700"]').style.textDecoration = 'line-through';
+                card.querySelector('[style*="font-weight:700"]').style.color = 'var(--text-muted)';
+
+                totalXP += points;
+                document.getElementById('xp-earned').textContent = totalXP;
+                showToast(`+${points} XP!`, `"${title}" completed! 🎉${res.streak > 1 ? ` 🔥 ${res.streak} day streak!` : ''}`, 'success');
+
+                // Refresh stats
+                await loadTasks();
+            } catch (e) {
+                card.classList.remove('completing');
+                showToast('Error', e.message, 'error');
+            }
+        }
+
+        init();
+    </script>
+</body>
+
+</html>
