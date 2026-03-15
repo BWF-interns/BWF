@@ -57,6 +57,7 @@ app.get('/roadmap', (req, res) => res.sendFile(path.join(__dirname, '../frontend
 app.get('/tasks', (req, res) => res.sendFile(path.join(__dirname, '../frontend/pages/tasks.html')));
 app.get('/requests', (req, res) => res.sendFile(path.join(__dirname, '../frontend/pages/requests.html')));
 app.get('/gallery', (req, res) => res.sendFile(path.join(__dirname, '../frontend/pages/gallery.html')));
+app.get('/students', (req, res) => res.sendFile(path.join(__dirname, '../frontend/pages/students.html')));
 // Housemother portal
 app.get('/housemother/dashboard', (req, res) => res.sendFile(path.join(__dirname, '../frontend/housemother/dashboard.html')));
 app.get('/housemother/students', (req, res) => res.sendFile(path.join(__dirname, '../frontend/housemother/students.html')));
