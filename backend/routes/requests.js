@@ -49,24 +49,36 @@ router.get('/', protect, authorize('admin', 'dean', 'housemother', 'founder'), a
     } catch (error) { next(error); }
 });
 
-// @route PUT /api/requests/:id/status (admin updates status)
+// @route PUT /api/requests/:id/status (staff updates status + appends audit trail)
 router.put('/:id/status', protect, authorize('admin', 'dean', 'housemother'), async (req, res, next) => {
     try {
         const { status, adminNotes } = req.body;
-        const request = await Request.findByIdAndUpdate(
-            req.params.id,
-            { status, adminNotes, ...(status === 'fulfilled' ? { fulfilledAt: new Date() } : {}), assignedTo: req.user._id },
-            { new: true }
-        ).populate({ path: 'student', populate: { path: 'user', select: 'name _id' } });
+        const request = await Request.findById(req.params.id)
+            .populate({ path: 'student', populate: { path: 'user', select: 'name _id' } });
 
         if (!request) return res.status(404).json({ success: false, message: 'Request not found' });
+
+        request.status = status;
+        if (adminNotes) request.adminNotes = adminNotes;
+        if (status === 'fulfilled') request.fulfilledAt = new Date();
+        request.assignedTo = req.user._id;
+
+        // Append to audit trail
+        request.auditTrail.push({
+            status,
+            note: adminNotes || '',
+            changedBy: req.user._id,
+            changedAt: new Date()
+        });
+
+        await request.save();
 
         // Notify student
         const statusMessages = {
             seen: 'Your request has been seen by our team 👀',
             in_progress: 'Your request is being processed 🔄',
             fulfilled: 'Your request has been fulfilled! ✅',
-            rejected: 'Your request could not be fulfilled this time.'
+            rejected: 'Your request could not be fulfilled at this time.'
         };
         if (statusMessages[status]) {
             await Notification.create({
@@ -81,5 +93,6 @@ router.put('/:id/status', protect, authorize('admin', 'dean', 'housemother'), as
         res.json({ success: true, data: request, message: `Request status updated to: ${status}` });
     } catch (error) { next(error); }
 });
+
 
 module.exports = router;

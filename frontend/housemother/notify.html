@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>BWF — Send Notification</title>
+    <link rel="stylesheet" href="/css/staff.css" />
+</head>
+
+<body>
+    <div class="app-layout">
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <div class="logo-icon">🌏</div>
+                <div class="logo-text">
+                    <h2>BWF Portal</h2><span class="staff-badge">Housemother</span>
+                </div>
+            </div>
+            <div class="sidebar-staff">
+                <div class="staff-card">
+                    <div class="staff-avatar" id="sb-staff-avatar">HM</div>
+                    <div class="staff-info">
+                        <h4 id="sb-staff-name">Loading...</h4>
+                        <p id="sb-staff-role">Housemother</p>
+                    </div>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/housemother/dashboard" class="nav-link"><span class="nav-icon">🏠</span> Dashboard</a>
+                <a href="/housemother/students" class="nav-link"><span class="nav-icon">👩‍🎓</span> My Students</a>
+                <a href="/housemother/requests" class="nav-link"><span class="nav-icon">📋</span> Requests</a>
+                <a href="/housemother/gallery" class="nav-link"><span class="nav-icon">📸</span> Gallery Review</a>
+                <a href="/housemother/notify" class="nav-link active"><span class="nav-icon">📢</span> Send
+                    Notification</a>
+            </nav>
+            <div class="sidebar-bottom"><button class="logout-btn" onclick="staffLogout()"><span>🚪</span> Sign
+                    Out</button></div>
+        </aside>
+
+        <div class="main-content">
+            <header class="topbar">
+                <div style="display:flex;align-items:center;gap:14px">
+                    <button class="hamburger" id="hamburger">☰</button>
+                    <div class="topbar-left">
+                        <h1>📢 Send Notification</h1>
+                        <p>Reach out to one student or all of them</p>
+                    </div>
+                </div>
+            </header>
+
+            <div class="page-content fade-in">
+                <div class="grid-2" style="align-items:start">
+
+                    <!-- Send Form -->
+                    <div class="card">
+                        <div class="card-title" style="margin-bottom:16px">Compose Notification</div>
+
+                        <div class="form-group">
+                            <label class="form-label">Recipient</label>
+                            <div style="display:flex;gap:10px;margin-bottom:12px">
+                                <button class="btn btn-primary btn-sm" id="btn-broadcast"
+                                    onclick="setMode('broadcast')">📢 All My Students</button>
+                                <button class="btn btn-secondary btn-sm" id="btn-single"
+                                    onclick="setMode('single')">👩‍🎓 One Student</button>
+                            </div>
+                            <select id="student-select" class="form-control" style="display:none">
+                                <option value="">Select a student...</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Icon</label>
+                            <div style="display:flex;gap:8px;flex-wrap:wrap" id="icon-picker"></div>
+                            <input id="selected-icon" type="hidden" value="📢" />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Title</label>
+                            <input id="notif-title" class="form-control" placeholder="e.g. Health check at 3pm" />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Message</label>
+                            <textarea id="notif-msg" class="form-control" rows="4"
+                                placeholder="Write your message here..."></textarea>
+                        </div>
+
+                        <div style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-md);padding:14px;margin-bottom:16px"
+                            id="preview-box">
+                            <div
+                                style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-muted);margin-bottom:8px">
+                                Preview</div>
+                            <div style="display:flex;gap:10px;align-items:flex-start">
+                                <span id="preview-icon" style="font-size:22px">📢</span>
+                                <div>
+                                    <div id="preview-title"
+                                        style="font-size:14px;font-weight:600;color:var(--text-primary)">Title will
+                                        appear here</div>
+                                    <div id="preview-msg" style="font-size:12px;color:var(--text-muted);margin-top:2px">
+                                        Message will appear here</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-primary btn-block" onclick="sendNotif()">Send Notification 🚀</button>
+                    </div>
+
+                    <!-- Quick Messages -->
+                    <div class="card">
+                        <div class="card-title" style="margin-bottom:16px">⚡ Quick Messages</div>
+                        <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px">Click to pre-fill the form
+                        </p>
+                        <div id="quick-messages"></div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/staff-api.js"></script>
+    <script>
+        requireHousemother();
+        initStaffSidebar();
+
+        // Build icon picker
+        const ICONS = ['📢', '📚', '💊', '🍽️', '🔔', '❤️', '✅', '⭐', '🌿', '💬'];
+        document.getElementById('icon-picker').innerHTML = ICONS.map(e =>
+            `<button class="btn btn-secondary btn-sm icon-btn" onclick="setIcon('${e}')" style="font-size:18px;padding:8px">${e}</button>`
+        ).join('');
+
+        // Build quick messages
+        const QUICK = [
+            { icon: '💊', title: 'Health Check Reminder', msg: "Dear student, please don't forget your scheduled health check today. Stay well! 💙" },
+            { icon: '📚', title: 'Study Time', msg: 'Time to sit down and study! Your future self will thank you. You can do it! ⭐' },
+            { icon: '🍽️', title: 'Meal Time', msg: 'Food is ready in the dining room. Please come for your meal.' },
+            { icon: '🧹', title: 'Cleaning Duty', msg: "Reminder: It's your turn for common area cleaning. Let's keep our home beautiful together! 🌿" },
+            { icon: '🔔', title: 'Emergency Alert', msg: 'Please come to the common room immediately. Important announcement from the Housemother.' },
+            { icon: '❤️', title: 'Well Done!', msg: 'I am so proud of your effort today. You are doing amazing! Keep it up! 🌟' },
+        ];
+        document.getElementById('quick-messages').innerHTML = QUICK.map(q =>
+            `<div onclick="quickFill('${q.icon}','${q.title.replace(/'/g, "&apos;")}','${q.msg.replace(/'/g, "&apos;")}')" style="display:flex;gap:12px;align-items:flex-start;padding:12px;border:1px solid var(--border);border-radius:var(--radius-md);margin-bottom:8px;cursor:pointer;transition:background 0.15s" onmouseover="this.style.background='var(--bg-card-hover)'" onmouseout="this.style.background=''">
+                <span style="font-size:22px;flex-shrink:0">${q.icon}</span>
+                <div><div style="font-size:13px;font-weight:600">${q.title}</div><div style="font-size:12px;color:var(--text-muted)">${q.msg.substring(0, 60)}...</div></div>
+            </div>`
+        ).join('');
+
+        let mode = 'broadcast';
+
+        async function init() {
+            const { data } = await StaffStudentsAPI.list({ limit: 100 });
+            const sel = document.getElementById('student-select');
+            data.forEach(s => { const o = document.createElement('option'); o.value = s._id; o.textContent = s.user?.name || '--'; sel.appendChild(o); });
+        }
+
+        function setMode(m) {
+            mode = m;
+            document.getElementById('student-select').style.display = m === 'single' ? 'block' : 'none';
+            document.getElementById('btn-broadcast').className = `btn btn-sm ${m === 'broadcast' ? 'btn-primary' : 'btn-secondary'}`;
+            document.getElementById('btn-single').className = `btn btn-sm ${m === 'single' ? 'btn-primary' : 'btn-secondary'}`;
+        }
+
+        function setIcon(emoji) {
+            document.getElementById('selected-icon').value = emoji;
+            document.getElementById('preview-icon').textContent = emoji;
+            document.querySelectorAll('.icon-btn').forEach(b => b.style.background = '');
+            event.target.closest('.icon-btn').style.background = 'var(--primary-dim)';
+        }
+
+        function quickFill(icon, title, msg) {
+            setIcon(icon);
+            document.getElementById('notif-title').value = title;
+            document.getElementById('notif-msg').value = msg;
+            updatePreview();
+        }
+
+        function updatePreview() {
+            document.getElementById('preview-icon').textContent = document.getElementById('selected-icon').value;
+            document.getElementById('preview-title').textContent = document.getElementById('notif-title').value || 'Title will appear here';
+            document.getElementById('preview-msg').textContent = document.getElementById('notif-msg').value || 'Message will appear here';
+        }
+        document.getElementById('notif-title').addEventListener('input', updatePreview);
+        document.getElementById('notif-msg').addEventListener('input', updatePreview);
+
+        async function sendNotif() {
+            const title = document.getElementById('notif-title').value.trim();
+            const message = document.getElementById('notif-msg').value.trim();
+            const icon = document.getElementById('selected-icon').value;
+            if (!title || !message) return showStaffToast('Required', 'Please fill in title and message', 'error');
+
+            try {
+                if (mode === 'broadcast') {
+                    await StaffNotificationsAPI.broadcast(title, message, icon);
+                    showStaffToast('Sent! 📢', 'Notification sent to all your students', 'success');
+                } else {
+                    const studentId = document.getElementById('student-select').value;
+                    if (!studentId) return showStaffToast('Required', 'Please select a student', 'error');
+                    await StaffNotificationsAPI.sendToStudent(studentId, title, message, icon);
+                    showStaffToast('Sent! ✅', 'Notification delivered to student', 'success');
+                }
+                document.getElementById('notif-title').value = '';
+                document.getElementById('notif-msg').value = '';
+                updatePreview();
+            } catch (e) { showStaffToast('Error', e.message, 'error'); }
+        }
+
+        init();
+    </script>
+</body>
+
+</html>

@@ -118,6 +118,9 @@ function requireStudent() {
     if (!requireAuth()) return false;
     const user = TokenManager.getUser();
     if (user?.role !== 'student') {
+        // Clear stale auth so login page doesn't bounce back
+        TokenManager.clear();
+        TokenManager.clearUser();
         window.location.href = '/';
         return false;
     }

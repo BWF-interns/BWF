@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>BWF — Gallery Review</title>
+    <link rel="stylesheet" href="/css/staff.css" />
+</head>
+
+<body>
+    <div class="app-layout">
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <div class="logo-icon">🌏</div>
+                <div class="logo-text">
+                    <h2>BWF Portal</h2><span class="staff-badge">Housemother</span>
+                </div>
+            </div>
+            <div class="sidebar-staff">
+                <div class="staff-card">
+                    <div class="staff-avatar" id="sb-staff-avatar">HM</div>
+                    <div class="staff-info">
+                        <h4 id="sb-staff-name">Loading...</h4>
+                        <p id="sb-staff-role">Housemother</p>
+                    </div>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/housemother/dashboard" class="nav-link"><span class="nav-icon">🏠</span> Dashboard</a>
+                <a href="/housemother/students" class="nav-link"><span class="nav-icon">👩‍🎓</span> My Students</a>
+                <a href="/housemother/requests" class="nav-link"><span class="nav-icon">📋</span> Requests</a>
+                <a href="/housemother/gallery" class="nav-link active"><span class="nav-icon">📸</span> Gallery
+                    Review</a>
+                <a href="/housemother/notify" class="nav-link"><span class="nav-icon">📢</span> Send Notification</a>
+            </nav>
+            <div class="sidebar-bottom"><button class="logout-btn" onclick="staffLogout()"><span>🚪</span> Sign
+                    Out</button></div>
+        </aside>
+
+        <div class="main-content">
+            <header class="topbar">
+                <div style="display:flex;align-items:center;gap:14px">
+                    <button class="hamburger" id="hamburger">☰</button>
+                    <div class="topbar-left">
+                        <h1>📸 Gallery Review</h1>
+                        <p id="post-count">Loading pending photos...</p>
+                    </div>
+                </div>
+            </header>
+
+            <div class="page-content fade-in">
+                <div class="safeguard-check" style="margin-bottom:20px">
+                    <div style="font-size:13px;font-weight:700;color:var(--accent-orange);margin-bottom:8px">⚠️
+                        Safeguarding Guidelines — Review Before Approving</div>
+                    <div style="font-size:12px;color:var(--text-secondary)">Before approving any photo, ensure it does
+                        not contain identifiable school names, landmarks, or locations. All students must be portrayed
+                        with dignity. When in doubt, reject and ask the student to resubmit.</div>
+                </div>
+
+                <div id="gallery-grid">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Review Modal -->
+    <div class="modal-overlay" id="review-modal">
+        <div class="modal" style="position:relative">
+            <div class="modal-title">Review Photo</div>
+            <div class="modal-subtitle" id="review-student-name">—</div>
+            <button class="modal-close" onclick="closeModal()">✕</button>
+            <img id="review-preview" src="" alt="Preview"
+                style="width:100%;border-radius:var(--radius-md);margin-bottom:16px;max-height:300px;object-fit:cover" />
+            <p id="review-caption"
+                style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;font-style:italic"></p>
+            <input type="hidden" id="review-post-id" />
+
+            <div class="safeguard-check">
+                <div style="font-size:12px;font-weight:700;color:var(--accent-orange);margin-bottom:8px">✅ Safeguarding
+                    Checklist — tick before approving</div>
+                <label><input type="checkbox" id="check1" /> No school name or uniform insignia visible</label>
+                <label><input type="checkbox" id="check2" /> No identifiable landmarks or street signs</label>
+                <label><input type="checkbox" id="check3" /> Student is portrayed with dignity and respect</label>
+                <label><input type="checkbox" id="check4" /> No personal information visible in background</label>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Hall of Fame? <span
+                        style="color:var(--text-muted);font-weight:400">(exceptional achievement only)</span></label>
+                <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
+                    <input type="checkbox" id="hall-of-fame-check"
+                        style="accent-color:var(--primary);width:18px;height:18px" />
+                    <span style="font-size:14px">Feature in Hall of Fame 🏆</span>
+                </label>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Review Note <span style="color:var(--text-muted);font-weight:400">(shown to
+                        student if rejected)</span></label>
+                <textarea id="review-note" class="form-control"
+                    placeholder="Optional note for the student..."></textarea>
+            </div>
+
+            <div style="display:flex;gap:10px">
+                <button class="btn btn-success btn-block" onclick="doReview('approve')">✅ Approve Photo</button>
+                <button class="btn btn-danger btn-block" onclick="doReview('reject')">❌ Reject</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/staff-api.js"></script>
+    <script>
+        requireHousemother();
+        initStaffSidebar();
+
+        async function loadPending() {
+            try {
+                const { data } = await StaffPostsAPI.pending();
+                document.getElementById('post-count').textContent = `${data.length} photo${data.length !== 1 ? 's' : ''} awaiting review`;
+                if (!data.length) {
+                    document.getElementById('gallery-grid').innerHTML = '<div class="empty-state"><span class="emoji">✅</span><h3>All caught up!</h3><p>No photos pending review</p></div>';
+                    return;
+                }
+                document.getElementById('gallery-grid').innerHTML = `
+      <div class="review-grid">
+        ${data.map(p => `
+          <div class="review-card">
+            ${p.images?.[0] ? `<img class="review-img" src="${p.images[0]}" alt="Student photo" onerror="this.outerHTML='<div class=review-img-placeholder>📷</div>'"/>` : '<div class="review-img-placeholder">📷</div>'}
+            <div class="review-body">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+                <div class="avatar-placeholder" style="width:28px;height:28px;font-size:10px">${getInitialsStaff(p.student?.user?.name)}</div>
+                <strong style="font-size:13px">${p.student?.user?.name || '--'}</strong>
+              </div>
+              <div class="review-meta">${p.caption || 'No caption'} · ${timeAgo(p.createdAt)}</div>
+              <div class="review-actions">
+                <button class="btn btn-primary btn-sm" style="flex:1" onclick="openReview('${p._id}','${p.student?.user?.name || ''}','${p.images?.[0] || ''}','${(p.caption || '').replace(/'/g, "\\'")}')">Review 🔍</button>
+              </div>
+            </div>
+          </div>`).join('')}
+      </div>`;
+            } catch (e) { showStaffToast('Error', e.message, 'error'); }
+        }
+
+        function openReview(id, name, imgUrl, caption) {
+            document.getElementById('review-post-id').value = id;
+            document.getElementById('review-student-name').textContent = `Photo by ${name}`;
+            document.getElementById('review-preview').src = imgUrl;
+            document.getElementById('review-caption').textContent = caption ? `"${caption}"` : '';
+            document.getElementById('review-note').value = '';
+            document.getElementById('hall-of-fame-check').checked = false;
+            ['check1', 'check2', 'check3', 'check4'].forEach(id => document.getElementById(id).checked = false);
+            document.getElementById('review-modal').classList.add('open');
+        }
+
+        async function doReview(action) {
+            if (action === 'approve') {
+                const checks = ['check1', 'check2', 'check3', 'check4'].every(id => document.getElementById(id).checked);
+                if (!checks) return showStaffToast('Safeguarding Required', 'Please tick all safeguarding checks before approving', 'error');
+            }
+            const id = document.getElementById('review-post-id').value;
+            const hallOfFame = document.getElementById('hall-of-fame-check').checked;
+            const reviewNote = document.getElementById('review-note').value;
+            try {
+                await StaffPostsAPI.review(id, action, hallOfFame, reviewNote);
+                showStaffToast(action === 'approve' ? 'Approved! ✅' : 'Rejected', action === 'approve' ? 'Photo is now visible in the gallery' : 'Student has been notified', action === 'approve' ? 'success' : 'info');
+                closeModal();
+                loadPending();
+            } catch (e) { showStaffToast('Error', e.message, 'error'); }
+        }
+
+        function closeModal() { document.getElementById('review-modal').classList.remove('open'); }
+        document.getElementById('review-modal').addEventListener('click', e => { if (e.target.id === 'review-modal') closeModal(); });
+        loadPending();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>BWF — Broadcast Notification</title>
+    <link rel="stylesheet" href="/css/staff.css" />
+</head>
+
+<body>
+    <div class="app-layout">
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <div class="logo-icon">🌏</div>
+                <div class="logo-text">
+                    <h2>BWF Portal</h2><span class="staff-badge">Warden / Dean</span>
+                </div>
+            </div>
+            <div class="sidebar-staff">
+                <div class="staff-card">
+                    <div class="staff-avatar" id="sb-staff-avatar">DN</div>
+                    <div class="staff-info">
+                        <h4 id="sb-staff-name">Loading...</h4>
+                        <p id="sb-staff-role">Dean</p>
+                    </div>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/dean/dashboard" class="nav-link"><span class="nav-icon">📊</span> Analytics Dashboard</a>
+                <a href="/dean/students" class="nav-link"><span class="nav-icon">👩‍🎓</span> All Students</a>
+                <a href="/dean/requests" class="nav-link"><span class="nav-icon">📋</span> All Requests</a>
+                <a href="/dean/gallery" class="nav-link"><span class="nav-icon">📸</span> Gallery Moderation</a>
+                <a href="/dean/notify" class="nav-link active"><span class="nav-icon">📢</span> Broadcast</a>
+            </nav>
+            <div class="sidebar-bottom"><button class="logout-btn" onclick="staffLogout()"><span>🚪</span> Sign
+                    Out</button></div>
+        </aside>
+
+        <div class="main-content">
+            <header class="topbar">
+                <div style="display:flex;align-items:center;gap:14px">
+                    <button class="hamburger" id="hamburger">☰</button>
+                    <div class="topbar-left">
+                        <h1>📢 Broadcast</h1>
+                        <p>Send a message to all students or a specific house</p>
+                    </div>
+                </div>
+            </header>
+
+            <div class="page-content fade-in">
+                <div class="grid-2" style="align-items:start">
+
+                    <!-- Composer -->
+                    <div class="card">
+                        <div class="card-title" style="margin-bottom:16px">Compose Message</div>
+                        <div class="form-group">
+                            <label class="form-label">Audience</label>
+                            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+                                <button class="btn btn-primary btn-sm" id="btn-all" onclick="setAudience('all')">📢 All
+                                    Students</button>
+                                <button class="btn btn-secondary btn-sm" id="btn-house"
+                                    onclick="setAudience('house')">🏠 By House</button>
+                                <button class="btn btn-secondary btn-sm" id="btn-single"
+                                    onclick="setAudience('single')">👩‍🎓 One Student</button>
+                            </div>
+                            <select id="house-select" class="form-control" style="display:none;margin-bottom:8px">
+                                <option value="">Select house...</option>
+                                <option>House A</option>
+                                <option>House B</option>
+                                <option>House C</option>
+                            </select>
+                            <select id="student-select" class="form-control" style="display:none">
+                                <option value="">Select student...</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Icon</label>
+                            <div style="display:flex;gap:8px;flex-wrap:wrap" id="icon-picker"></div>
+                            <input type="hidden" id="selected-icon" value="📢" />
+                        </div>
+
+                        <div class="form-group"><label class="form-label">Title *</label><input id="notif-title"
+                                class="form-control" placeholder="e.g. Assembly tomorrow at 8am" /></div>
+                        <div class="form-group"><label class="form-label">Message *</label><textarea id="notif-msg"
+                                class="form-control" rows="4" placeholder="Compose your message..."></textarea></div>
+
+                        <!-- Preview -->
+                        <div
+                            style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-md);padding:14px;margin-bottom:16px">
+                            <div
+                                style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-muted);margin-bottom:8px">
+                                Preview</div>
+                            <div style="display:flex;gap:10px;align-items:flex-start">
+                                <span id="preview-icon" style="font-size:22px">📢</span>
+                                <div>
+                                    <div id="preview-title"
+                                        style="font-size:14px;font-weight:600;color:var(--text-primary)">Title</div>
+                                    <div id="preview-msg" style="font-size:12px;color:var(--text-muted);margin-top:2px">
+                                        Message</div>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary btn-block" onclick="sendMsg()" id="send-btn">Send Notification
+                            🚀</button>
+                    </div>
+
+                    <!-- Quick Templates -->
+                    <div class="card">
+                        <div class="card-title" style="margin-bottom:16px">⚡ Dean Message Templates</div>
+                        <div id="quick-templates"></div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/staff-api.js"></script>
+    <script>
+        requireDean();
+        initStaffSidebar();
+
+        // Build icon picker
+        const ICONS = ['📢', '🚨', '📚', '💊', '🍽️', '🔔', '❤️', '✅', '⭐', '🎆', '🌿', '💬'];
+        document.getElementById('icon-picker').innerHTML = ICONS.map(e =>
+            `<button class="btn btn-secondary btn-sm icon-btn" onclick="setIcon('${e}')" style="font-size:18px;padding:8px">${e}</button>`
+        ).join('');
+
+        // Build quick templates
+        const QUICK = [
+            { icon: '🚨', title: 'Emergency Assembly', msg: 'All students, please report to the main hall immediately. This is an important announcement.' },
+            { icon: '🎆', title: 'Achievement Announcement', msg: "We are proud to celebrate our students' achievements. You make BWF proud!" },
+            { icon: '📚', title: 'Exam Preparation', msg: 'Exams are approaching! Please devote extra time to your studies. Your teachers and housemothers are here to support you.' },
+            { icon: '❤️', title: 'Mental Wellness Check-in', msg: 'Remember: your feelings matter. Please speak to your Housemother if you need any support. We are here for you.' },
+            { icon: '🌿', title: 'Holiday Announcement', msg: 'Dear students, we have an upcoming holiday. Please follow the schedule shared by your Housemother.' },
+            { icon: '⭐', title: 'Monthly Stars', msg: "Congratulations to this month's star students! Your hard work and dedication inspire everyone around you." },
+        ];
+        document.getElementById('quick-templates').innerHTML = QUICK.map(q =>
+            `<div onclick="quickFill('${q.icon}','${q.title.replace(/'/g, "&apos;")}','${q.msg.replace(/'/g, "&apos;")}')" style="display:flex;gap:12px;align-items:flex-start;padding:12px;border:1px solid var(--border);border-radius:var(--radius-md);margin-bottom:8px;cursor:pointer;transition:background 0.15s" onmouseover="this.style.background='var(--bg-card-hover)'" onmouseout="this.style.background=''">
+                <span style="font-size:22px;flex-shrink:0">${q.icon}</span>
+                <div><div style="font-size:13px;font-weight:600">${q.title}</div><div style="font-size:12px;color:var(--text-muted)">${q.msg.substring(0, 65)}...</div></div>
+            </div>`
+        ).join('');
+
+        let audience = 'all';
+
+        async function init() {
+            const { data } = await StaffStudentsAPI.list({ limit: 200 });
+            const sel = document.getElementById('student-select');
+            data.forEach(s => { const o = document.createElement('option'); o.value = s._id; o.textContent = `${s.user?.name} (${s.homeGroup})`; sel.appendChild(o); });
+        }
+
+        function setAudience(a) {
+            audience = a;
+            document.getElementById('house-select').style.display = a === 'house' ? 'block' : 'none';
+            document.getElementById('student-select').style.display = a === 'single' ? 'block' : 'none';
+            ['btn-all', 'btn-house', 'btn-single'].forEach(b => document.getElementById(b).className = 'btn btn-sm btn-secondary');
+            document.getElementById(`btn-${a}`).className = 'btn btn-sm btn-primary';
+        }
+
+        function setIcon(e) {
+            document.getElementById('selected-icon').value = e;
+            document.getElementById('preview-icon').textContent = e;
+            document.querySelectorAll('.icon-btn').forEach(b => b.style.background = '');
+            event?.target?.closest('.icon-btn')?.style && (event.target.closest('.icon-btn').style.background = 'var(--primary-dim)');
+        }
+
+        function quickFill(icon, title, msg) {
+            setIcon(icon);
+            document.getElementById('notif-title').value = title;
+            document.getElementById('notif-msg').value = msg;
+            updatePreview();
+        }
+
+        function updatePreview() {
+            document.getElementById('preview-icon').textContent = document.getElementById('selected-icon').value;
+            document.getElementById('preview-title').textContent = document.getElementById('notif-title').value || 'Title';
+            document.getElementById('preview-msg').textContent = document.getElementById('notif-msg').value || 'Message';
+        }
+        document.getElementById('notif-title').addEventListener('input', updatePreview);
+        document.getElementById('notif-msg').addEventListener('input', updatePreview);
+
+        async function sendMsg() {
+            const title = document.getElementById('notif-title').value.trim();
+            const message = document.getElementById('notif-msg').value.trim();
+            const icon = document.getElementById('selected-icon').value;
+            if (!title || !message) return showStaffToast('Required', 'Fill in title and message', 'error');
+            try {
+                if (audience === 'single') {
+                    const sid = document.getElementById('student-select').value;
+                    if (!sid) return showStaffToast('Required', 'Select a student', 'error');
+                    await StaffNotificationsAPI.sendToStudent(sid, title, message, icon);
+                    showStaffToast('Sent! ✅', 'Notification sent to student', 'success');
+                } else if (audience === 'house') {
+                    const hg = document.getElementById('house-select').value;
+                    if (!hg) return showStaffToast('Required', 'Select a house', 'error');
+                    await StaffNotificationsAPI.broadcast(title, message, icon, hg);
+                    showStaffToast('Sent! 📢', `Notification sent to ${hg}`, 'success');
+                } else {
+                    await StaffNotificationsAPI.broadcast(title, message, icon);
+                    showStaffToast('Broadcast sent! 📢', 'All students have been notified', 'success');
+                }
+                document.getElementById('notif-title').value = '';
+                document.getElementById('notif-msg').value = '';
+                updatePreview();
+            } catch (e) { showStaffToast('Error', e.message, 'error'); }
+        }
+
+        init();
+    </script>
+</body>
+
+</html>

@@ -47,6 +47,8 @@ const studentSchema = new mongoose.Schema({
     // Metadata
     admittedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     roomNumber: { type: String },
+    homeGroup: { type: String, default: 'House A' }, // links student to housemother's group
+    guardianConsent: { type: Boolean, default: false }, // DPDP Act 2023 compliance
     joinDate: { type: Date, default: Date.now }
 }, { timestamps: true });
 

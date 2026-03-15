@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>BWF — All Students</title>
+    <link rel="stylesheet" href="/css/staff.css" />
+</head>
+
+<body>
+    <div class="app-layout">
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <div class="logo-icon">🌏</div>
+                <div class="logo-text">
+                    <h2>BWF Portal</h2><span class="staff-badge">Warden / Dean</span>
+                </div>
+            </div>
+            <div class="sidebar-staff">
+                <div class="staff-card">
+                    <div class="staff-avatar" id="sb-staff-avatar">DN</div>
+                    <div class="staff-info">
+                        <h4 id="sb-staff-name">Loading...</h4>
+                        <p id="sb-staff-role">Dean</p>
+                    </div>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/dean/dashboard" class="nav-link"><span class="nav-icon">📊</span> Analytics Dashboard</a>
+                <a href="/dean/students" class="nav-link active"><span class="nav-icon">👩‍🎓</span> All Students</a>
+                <a href="/dean/requests" class="nav-link"><span class="nav-icon">📋</span> All Requests</a>
+                <a href="/dean/gallery" class="nav-link"><span class="nav-icon">📸</span> Gallery Moderation</a>
+                <a href="/dean/notify" class="nav-link"><span class="nav-icon">📢</span> Broadcast</a>
+            </nav>
+            <div class="sidebar-bottom"><button class="logout-btn" onclick="staffLogout()"><span>🚪</span> Sign
+                    Out</button></div>
+        </aside>
+
+        <div class="main-content">
+            <header class="topbar">
+                <div style="display:flex;align-items:center;gap:14px">
+                    <button class="hamburger" id="hamburger">☰</button>
+                    <div class="topbar-left">
+                        <h1>All Students</h1>
+                        <p id="student-count">Loading...</p>
+                    </div>
+                </div>
+                <div class="topbar-right">
+                    <button class="btn btn-primary btn-sm" onclick="openAddModal()">+ Enroll Student</button>
+                    <div class="search-bar" style="min-width:220px"><span>🔍</span><input type="text" id="search-input"
+                            placeholder="Search by name..." /></div>
+                </div>
+            </header>
+
+            <div class="page-content fade-in">
+                <div class="filter-bar">
+                    <select class="form-control" id="filter-home" style="width:auto">
+                        <option value="">All Houses</option>
+                        <option>House A</option>
+                        <option>House B</option>
+                        <option>House C</option>
+                    </select>
+                    <select class="form-control" id="filter-streak" style="width:auto">
+                        <option value="">All</option>
+                        <option value="0">Broken Streak</option>
+                        <option value="active">Active Streak</option>
+                    </select>
+                    <select class="form-control" id="filter-consent" style="width:auto">
+                        <option value="">All Consent</option>
+                        <option value="missing">Missing Consent</option>
+                        <option value="given">Consent Given</option>
+                    </select>
+                </div>
+                <div class="card">
+                    <div id="students-table">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Student Modal -->
+    <div class="modal-overlay" id="add-modal">
+        <div class="modal" style="position:relative;max-height:80vh;overflow-y:auto">
+            <div class="modal-title">+ Enroll New Student</div>
+            <div class="modal-subtitle">Creates a login account and student profile</div>
+            <button class="modal-close" onclick="closeModal()">✕</button>
+            <div class="form-group"><label class="form-label">Full Name *</label><input id="add-name"
+                    class="form-control" placeholder="e.g. Fatima Begum" /></div>
+            <div class="form-group"><label class="form-label">Email *</label><input id="add-email" class="form-control"
+                    placeholder="e.g. fatima@bwf.org" type="email" /></div>
+            <div class="form-group"><label class="form-label">Password</label><input id="add-password"
+                    class="form-control" placeholder="Default: student123" value="student123" /></div>
+            <div class="form-group"><label class="form-label">House Group</label>
+                <select id="add-home" class="form-control">
+                    <option>House A</option>
+                    <option>House B</option>
+                    <option>House C</option>
+                </select>
+            </div>
+            <div class="form-group"><label class="form-label">Current Class</label><input id="add-class"
+                    class="form-control" placeholder="e.g. 7th" /></div>
+            <div class="form-group"><label class="form-label">School</label><input id="add-school" class="form-control"
+                    placeholder="e.g. Govt Girls School Srinagar" /></div>
+            <button class="btn btn-primary btn-block" onclick="doAddStudent()">Enroll Student</button>
+        </div>
+    </div>
+
+    <script src="/js/staff-api.js"></script>
+    <script>
+        requireDean();
+        initStaffSidebar();
+        let allStudents = [];
+
+        async function loadStudents() {
+            try {
+                const { data } = await StaffStudentsAPI.list({ limit: 200 });
+                allStudents = data;
+                document.getElementById('student-count').textContent = `${data.length} enrolled students`;
+                renderTable(data);
+            } catch (e) { showStaffToast('Error', e.message, 'error'); }
+        }
+
+        function renderTable(students) {
+            if (!students.length) {
+                document.getElementById('students-table').innerHTML = '<div class="empty-state"><span class="emoji">👩‍🎓</span><h3>No students</h3></div>';
+                return;
+            }
+            document.getElementById('students-table').innerHTML = `
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Student</th><th>House</th><th>Class</th><th>Goal</th><th>XP</th><th>Streak</th><th>Consent</th><th></th></tr></thead>
+        <tbody>${students.map(s => `
+          <tr>
+            <td><div style="display:flex;align-items:center;gap:10px">
+              <div class="avatar-placeholder" style="width:34px;height:34px;font-size:11px">${getInitialsStaff(s.user?.name)}</div>
+              <div><div style="font-size:13px;font-weight:600;color:var(--text-primary)">${s.user?.name || '--'}</div><div style="font-size:11px;color:var(--text-muted)">${s.studentId || ''}</div></div>
+            </div></td>
+            <td><span class="badge badge-teal">${s.homeGroup || '--'}</span></td>
+            <td>${s.education?.currentClass || '--'}</td>
+            <td style="font-size:12px">${s.careerGoal || '<span style="color:var(--text-muted)">—</span>'}</td>
+            <td><strong>${s.totalPoints || 0}</strong> XP</td>
+            <td>${s.streak > 0 ? `<span class="badge badge-green">🔥${s.streak}d</span>` : '<span class="badge badge-red">🔴</span>'}</td>
+            <td>${s.guardianConsent ? '<span class="badge badge-green">✅</span>' : '<span class="badge badge-red">⚠️</span>'}</td>
+            <td><a href="/housemother/student-detail?id=${s._id}" class="btn btn-secondary btn-sm">View →</a></td>
+          </tr>`).join('')}</tbody>
+      </table>
+    </div>`;
+        }
+
+        function applyFilters() {
+            const search = document.getElementById('search-input').value.toLowerCase();
+            const home = document.getElementById('filter-home').value;
+            const streak = document.getElementById('filter-streak').value;
+            const consent = document.getElementById('filter-consent').value;
+            renderTable(allStudents.filter(s => {
+                if (search && !s.user?.name?.toLowerCase().includes(search)) return false;
+                if (home && s.homeGroup !== home) return false;
+                if (streak === '0' && s.streak !== 0) return false;
+                if (streak === 'active' && s.streak === 0) return false;
+                if (consent === 'missing' && s.guardianConsent) return false;
+                if (consent === 'given' && !s.guardianConsent) return false;
+                return true;
+            }));
+        }
+
+        ['search-input', 'filter-home', 'filter-streak', 'filter-consent'].forEach(id => {
+            const el = document.getElementById(id);
+            el?.addEventListener(id === 'search-input' ? 'input' : 'change', applyFilters);
+        });
+
+        function openAddModal() { document.getElementById('add-modal').classList.add('open'); }
+        function closeModal() { document.getElementById('add-modal').classList.remove('open'); }
+        document.getElementById('add-modal').addEventListener('click', e => { if (e.target.id === 'add-modal') closeModal(); });
+
+        async function doAddStudent() {
+            const name = document.getElementById('add-name').value.trim();
+            const email = document.getElementById('add-email').value.trim();
+            const password = document.getElementById('add-password').value.trim() || 'student123';
+            const homeGroup = document.getElementById('add-home').value;
+            const currentClass = document.getElementById('add-class').value.trim();
+            const school = document.getElementById('add-school').value.trim();
+            if (!name || !email) return showStaffToast('Required', 'Name and email are required', 'error');
+            try {
+                await StaffStudentsAPI.add({ name, email, password, homeGroup, education: { currentClass, school } });
+                showStaffToast('Enrolled! ✅', `${name} has been added to the portal`, 'success');
+                closeModal();
+                loadStudents();
+            } catch (e) { showStaffToast('Error', e.message, 'error'); }
+        }
+
+        loadStudents();
+    </script>
+</body>
+
+</html>

@@ -10,15 +10,23 @@ const requestSchema = new mongoose.Schema({
     title: { type: String, required: true },
     description: { type: String, required: true },
     urgency: { type: String, enum: ['low', 'medium', 'high', 'urgent'], default: 'medium' },
-    quantity: { type: String }, // e.g. "2 tablets", "1 pair of shoes size 38"
+    quantity: { type: String },
     status: {
         type: String,
         enum: ['pending', 'seen', 'in_progress', 'fulfilled', 'rejected'],
         default: 'pending'
     },
-    assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // housemother/dean
+    assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     adminNotes: { type: String },
-    fulfilledAt: { type: Date }
+    fulfilledAt: { type: Date },
+    // Full audit trail — every status change is recorded
+    auditTrail: [{
+        status: { type: String },
+        note: { type: String },
+        changedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        changedAt: { type: Date, default: Date.now }
+    }]
 }, { timestamps: true });
 
 module.exports = mongoose.model('Request', requestSchema);
+

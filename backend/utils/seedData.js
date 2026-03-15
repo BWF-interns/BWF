@@ -40,7 +40,8 @@ const seed = async () => {
         name: 'Sister Zara',
         email: 'housemother@bwf.org',
         password: 'house123',
-        role: 'housemother'
+        role: 'housemother',
+        homeGroup: 'House A'
     });
 
     // Create Student Users
@@ -55,7 +56,7 @@ const seed = async () => {
     // Create Student profiles
     const studentProfiles = await Student.insertMany([
         {
-            user: studentUsers[0]._id, studentId: 'BWF-2024-001',
+            user: studentUsers[0]._id, studentId: 'BWF-2024-001', homeGroup: 'House A', guardianConsent: true,
             dateOfBirth: new Date('2010-03-15'), gender: 'female', height: 152, weight: 42, bloodGroup: 'B+',
             healthDetails: { medicalConditions: [], allergies: ['Dust'], medications: [], notes: 'Generally healthy' },
             familyDetails: { guardianName: 'Uncle Tariq', guardianContact: '9876543210', siblings: 2, background: 'orphan', address: 'Srinagar, Kashmir' },

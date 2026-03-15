@@ -11,6 +11,7 @@ const userSchema = new mongoose.Schema({
         default: 'student'
     },
     avatar: { type: String, default: '' },
+    homeGroup: { type: String, default: '' }, // housemother's assigned house group
     isActive: { type: Boolean, default: true },
     lastLogin: { type: Date },
 }, { timestamps: true });

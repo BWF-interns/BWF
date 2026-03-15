@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>BWF — Student Detail</title>
+    <link rel="stylesheet" href="/css/staff.css" />
+</head>
+
+<body>
+    <div class="app-layout">
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <div class="logo-icon">🌏</div>
+                <div class="logo-text">
+                    <h2>BWF Portal</h2><span class="staff-badge">Housemother</span>
+                </div>
+            </div>
+            <div class="sidebar-staff">
+                <div class="staff-card">
+                    <div class="staff-avatar" id="sb-staff-avatar">HM</div>
+                    <div class="staff-info">
+                        <h4 id="sb-staff-name">Loading...</h4>
+                        <p id="sb-staff-role">Housemother</p>
+                    </div>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/housemother/dashboard" class="nav-link"><span class="nav-icon">🏠</span> Dashboard</a>
+                <a href="/housemother/students" class="nav-link active"><span class="nav-icon">👩‍🎓</span> My
+                    Students</a>
+                <a href="/housemother/requests" class="nav-link"><span class="nav-icon">📋</span> Requests</a>
+                <a href="/housemother/gallery" class="nav-link"><span class="nav-icon">📸</span> Gallery Review</a>
+                <a href="/housemother/notify" class="nav-link"><span class="nav-icon">📢</span> Send Notification</a>
+            </nav>
+            <div class="sidebar-bottom"><button class="logout-btn" onclick="staffLogout()"><span>🚪</span> Sign
+                    Out</button></div>
+        </aside>
+
+        <div class="main-content">
+            <header class="topbar">
+                <div style="display:flex;align-items:center;gap:14px">
+                    <button class="hamburger" id="hamburger">☰</button>
+                    <div class="topbar-left">
+                        <h1 id="page-title">Student Profile</h1>
+                        <p><a href="/housemother/students" style="color:var(--primary-light);text-decoration:none">←
+                                Back to Students</a></p>
+                    </div>
+                </div>
+                <div class="topbar-right">
+                    <button class="btn btn-primary btn-sm" onclick="saveChanges()">💾 Save Changes</button>
+                    <button class="btn btn-secondary btn-sm" onclick="sendNotif()">📢 Notify</button>
+                </div>
+            </header>
+
+            <div class="page-content fade-in" id="main-content">
+                <div class="spinner"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notify Modal -->
+    <div class="modal-overlay" id="notif-modal">
+        <div class="modal" style="position:relative">
+            <div class="modal-title">📢 Send Notification</div>
+            <div class="modal-subtitle" id="notif-subtitle">Sending to student</div>
+            <button class="modal-close" onclick="closeModal()">✕</button>
+            <div class="form-group"><label class="form-label">Title</label><input id="notif-title" class="form-control"
+                    placeholder="e.g. Health check reminder" /></div>
+            <div class="form-group"><label class="form-label">Message</label><textarea id="notif-msg"
+                    class="form-control" placeholder="Write your message..."></textarea></div>
+            <button class="btn btn-primary btn-block" onclick="doNotify()">Send Notification</button>
+        </div>
+    </div>
+
+    <script src="/js/staff-api.js"></script>
+    <script>
+        requireHousemother();
+        initStaffSidebar();
+
+        const params = new URLSearchParams(window.location.search);
+        const studentId = params.get('id');
+        let currentStudent = null;
+        if (!studentId) window.location.href = '/housemother/students';
+
+        async function loadStudent() {
+            try {
+                const { data: s } = await StaffStudentsAPI.get(studentId);
+                currentStudent = s;
+                document.getElementById('page-title').textContent = s.user?.name || 'Student Profile';
+                document.getElementById('main-content').innerHTML = `
+      <div class="grid-2">
+        <!-- Left: Core Info -->
+        <div>
+          <!-- Profile Card -->
+          <div class="card" style="margin-bottom:16px">
+            <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px">
+              <div class="avatar-placeholder" style="width:60px;height:60px;font-size:20px;font-weight:700">${getInitialsStaff(s.user?.name)}</div>
+              <div>
+                <div style="font-size:20px;font-weight:800;font-family:'Outfit',sans-serif">${s.user?.name || '--'}</div>
+                <div style="font-size:13px;color:var(--text-muted)">${s.studentId || '--'} · ${s.homeGroup || '--'}</div>
+                <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">
+                  <span class="badge badge-teal">⭐ Level ${s.level || 1}</span>
+                  <span class="badge badge-blue">${s.education?.currentClass || '--'} Class</span>
+                  ${s.streak > 0 ? `<span class="badge badge-green">🔥 ${s.streak}d streak</span>` : '<span class="badge badge-red">🔴 Streak broken</span>'}
+                  ${s.guardianConsent ? '<span class="badge badge-green">✅ Consent</span>' : '<span class="badge badge-red">⚠️ No Consent</span>'}
+                </div>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:13px">
+              <div><span style="color:var(--text-muted)">Career Goal:</span> <strong>${s.careerGoal || 'Not set'}</strong></div>
+              <div><span style="color:var(--text-muted)">Room:</span> <strong>${s.roomNumber || '--'}</strong></div>
+              <div><span style="color:var(--text-muted)">XP Points:</span> <strong>${s.totalPoints || 0}</strong></div>
+              <div><span style="color:var(--text-muted)">Blood Group:</span> <strong>${s.bloodGroup || '--'}</strong></div>
+              <div><span style="color:var(--text-muted)">DOB:</span> <strong>${s.dateOfBirth ? new Date(s.dateOfBirth).toLocaleDateString('en-IN') : '--'}</strong></div>
+              <div><span style="color:var(--text-muted)">Gender:</span> <strong style="text-transform:capitalize">${s.gender || '--'}</strong></div>
+            </div>
+          </div>
+
+          <!-- Health -->
+          <div class="card" style="margin-bottom:16px">
+            <div class="card-title" style="margin-bottom:16px">🏥 Health Details</div>
+            <div class="form-group">
+              <label class="form-label">Medical Conditions</label>
+              <input id="medical" class="form-control" value="${(s.healthDetails?.medicalConditions || []).join(', ')}" placeholder="e.g. Asthma, Diabetes"/>
+              <div class="form-hint">Comma-separated list</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Allergies</label>
+              <input id="allergies" class="form-control" value="${(s.healthDetails?.allergies || []).join(', ')}" placeholder="e.g. Dust, Peanuts"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Current Medications</label>
+              <input id="medications" class="form-control" value="${(s.healthDetails?.medications || []).join(', ')}" placeholder="e.g. Inhaler"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Health Notes</label>
+              <textarea id="health-notes" class="form-control">${s.healthDetails?.notes || ''}</textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Family + Consent -->
+        <div>
+          <!-- Family -->
+          <div class="card" style="margin-bottom:16px">
+            <div class="card-title" style="margin-bottom:16px">👨‍👩‍👧 Family Background</div>
+            <div class="form-group"><label class="form-label">Background</label>
+              <input class="form-control" value="${s.familyDetails?.background || ''}" disabled/>
+            </div>
+            <div class="form-group"><label class="form-label">Guardian Name</label>
+              <input class="form-control" value="${s.familyDetails?.guardianName || ''}" disabled/>
+            </div>
+            <div class="form-group"><label class="form-label">Guardian Contact</label>
+              <input class="form-control" value="${s.familyDetails?.guardianContact || ''}" disabled/>
+            </div>
+            <div class="form-group"><label class="form-label">Address</label>
+              <input class="form-control" value="${s.familyDetails?.address || ''}" disabled/>
+            </div>
+          </div>
+
+          <!-- Consent + Room -->
+          <div class="card" style="margin-bottom:16px">
+            <div class="card-title" style="margin-bottom:16px">⚖️ Admin Details</div>
+            <div class="form-group">
+              <label class="form-label">Room Number</label>
+              <input id="room" class="form-control" value="${s.roomNumber || ''}"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">House Group</label>
+              <input id="homeGroup" class="form-control" value="${s.homeGroup || 'House A'}"/>
+            </div>
+            <div class="form-group">
+              <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
+                <input type="checkbox" id="consent-check" ${s.guardianConsent ? 'checked' : ''} style="accent-color:var(--primary);width:18px;height:18px"/>
+                <div>
+                  <div style="font-size:14px;font-weight:600;color:var(--text-primary)">Guardian Consent Given</div>
+                  <div style="font-size:12px;color:var(--text-muted)">DPDP Act 2023 — Required for data processing</div>
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>`;
+            } catch (e) { showStaffToast('Error', e.message, 'error'); }
+        }
+
+        async function saveChanges() {
+            const updates = {
+                healthDetails: {
+                    medicalConditions: document.getElementById('medical').value.split(',').map(s => s.trim()).filter(Boolean),
+                    allergies: document.getElementById('allergies').value.split(',').map(s => s.trim()).filter(Boolean),
+                    medications: document.getElementById('medications').value.split(',').map(s => s.trim()).filter(Boolean),
+                    notes: document.getElementById('health-notes').value
+                },
+                roomNumber: document.getElementById('room').value,
+                homeGroup: document.getElementById('homeGroup').value,
+                guardianConsent: document.getElementById('consent-check').checked
+            };
+            try {
+                await StaffStudentsAPI.update(studentId, updates);
+                showStaffToast('Saved!', 'Student profile updated successfully', 'success');
+            } catch (e) { showStaffToast('Error', e.message, 'error'); }
+        }
+
+        function sendNotif() {
+            document.getElementById('notif-subtitle').textContent = `Sending to ${currentStudent?.user?.name || 'student'}`;
+            document.getElementById('notif-modal').classList.add('open');
+        }
+        function closeModal() { document.getElementById('notif-modal').classList.remove('open'); }
+
+        async function doNotify() {
+            const title = document.getElementById('notif-title').value;
+            const message = document.getElementById('notif-msg').value;
+            if (!title || !message) return showStaffToast('Required', 'Please fill in both fields', 'error');
+            try {
+                await StaffNotificationsAPI.sendToStudent(studentId, title, message);
+                showStaffToast('Sent!', 'Notification delivered to student', 'success');
+                closeModal();
+            } catch (e) { showStaffToast('Error', e.message, 'error'); }
+        }
+
+        document.getElementById('notif-modal').addEventListener('click', e => { if (e.target.id === 'notif-modal') closeModal(); });
+        loadStudent();
+    </script>
+</body>
+
+</html>

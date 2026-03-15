@@ -39,7 +39,8 @@ router.post('/login', async (req, res, next) => {
                 name: user.name,
                 email: user.email,
                 role: user.role,
-                avatar: user.avatar
+                avatar: user.avatar,
+                homeGroup: user.homeGroup || ''
             },
             studentId: studentProfile?._id || null
         });
