@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>BWF — Student Census</title>
+  <link rel="stylesheet" href="/css/staff.css"/>
+  <style>
+    :root { --primary:#6366f1; --primary-dim:rgba(99,102,241,0.15); --accent:#a78bfa; }
+    .demo-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:12px; margin-bottom:20px; }
+    .demo-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:16px; text-align:center; }
+    .demo-val { font-size:24px; font-weight:800; color:var(--primary); }
+    .demo-label { font-size:12px; color:var(--text-muted); margin-top:4px; }
+    .bar-row { display:flex; align-items:center; gap:10px; margin-bottom:10px; font-size:13px; }
+    .bar-row span:first-child { width:110px; text-align:right; color:var(--text-muted); font-size:12px; flex-shrink:0; }
+    .bar-fill { height:18px; border-radius:4px; min-width:4px; transition:width 0.4s; }
+    .bar-count { color:var(--text-secondary); font-size:12px; min-width:28px; }
+    .chart-cols { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; margin-bottom:20px; }
+    @media(max-width:800px){.chart-cols{grid-template-columns:1fr;}}
+    .chart-box { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:18px; }
+    .chart-title { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:var(--text-muted); margin-bottom:14px; }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">🌏</div>
+      <div class="logo-text"><h2>BWF Portal</h2><span class="staff-badge" style="background:rgba(99,102,241,0.2);color:#818cf8">Admin</span></div>
+    </div>
+    <div class="sidebar-staff">
+      <div class="staff-card">
+        <div class="staff-avatar" id="sb-staff-avatar" style="background:linear-gradient(135deg,#6366f1,#a78bfa)">AD</div>
+        <div class="staff-info"><h4 id="sb-staff-name">Loading...</h4><p id="sb-staff-role">Administrator</p></div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="/admin/dashboard" class="nav-link"><span class="nav-icon">📊</span> Dashboard</a>
+      <a href="/admin/compliance" class="nav-link"><span class="nav-icon">🔒</span> DPDP Compliance</a>
+      <a href="/admin/students" class="nav-link active"><span class="nav-icon">👩‍🎓</span> Student Census</a>
+      <a href="/admin/staff" class="nav-link"><span class="nav-icon">👥</span> Staff Management</a>
+      <a href="/admin/finance" class="nav-link"><span class="nav-icon">💰</span> Finance</a>
+      <a href="/admin/media" class="nav-link"><span class="nav-icon">📸</span> Media Oversight</a>
+    </nav>
+    <div class="sidebar-bottom"><button class="logout-btn" onclick="staffLogout()"><span>🚪</span> Sign Out</button></div>
+  </aside>
+
+  <div class="main-content">
+    <header class="topbar">
+      <div style="display:flex;align-items:center;gap:14px">
+        <button class="hamburger" id="hamburger">☰</button>
+        <div class="topbar-left"><h1>👩‍🎓 Student Census</h1><p id="subtitle">Loading demographics...</p></div>
+      </div>
+    </header>
+
+    <div class="page-content fade-in">
+      <!-- Summary tiles -->
+      <div class="demo-grid" id="demo-tiles">
+        <div class="demo-card"><div class="demo-val">—</div><div class="demo-label">Total enrollments</div></div>
+      </div>
+
+      <!-- Demographic charts -->
+      <div class="chart-cols">
+        <div class="chart-box"><div class="chart-title">📋 By Program</div><div id="chart-program"></div></div>
+        <div class="chart-box"><div class="chart-title">⚧ By Gender</div><div id="chart-gender"></div></div>
+        <div class="chart-box"><div class="chart-title">🏠 By Home Group</div><div id="chart-home"></div></div>
+        <div class="chart-box"><div class="chart-title">👪 By Background</div><div id="chart-bg"></div></div>
+        <div class="chart-box"><div class="chart-title">🎂 By Age Group</div><div id="chart-age"></div></div>
+        <div class="chart-box"><div class="chart-title">📈 Avg Metrics</div><div id="chart-avg"></div></div>
+      </div>
+
+      <!-- Full student table -->
+      <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+        <input id="search" class="form-control" style="flex:1;min-width:180px" placeholder="Search name or ID..." oninput="renderTable()"/>
+        <select id="filter-prog" class="form-control" style="width:auto" onchange="renderTable()">
+          <option value="">All Programs</option>
+          <option>Basera-e-Tabassum</option><option>Foster A Home</option><option>Rah-e-Niswan</option>
+        </select>
+        <select id="filter-house" class="form-control" style="width:auto" onchange="renderTable()">
+          <option value="">All Houses</option>
+          <option>House A</option><option>House B</option><option>House C</option>
+        </select>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <table class="data-table">
+          <thead><tr><th>Student</th><th>ID</th><th>House</th><th>Program</th><th>Class</th><th>Background</th><th>XP</th><th>Consent</th></tr></thead>
+          <tbody id="students-tbody"><tr><td colspan="8" style="text-align:center;padding:40px">Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/js/staff-api.js"></script>
+<script>
+  requireAdmin();
+  initStaffSidebar();
+  let students = [];
+
+  const COLORS = ['#6366f1','#a78bfa','#22c55e','#f59e0b','#ef4444','#06b6d4'];
+
+  function barChart(containerId, data, colorOffset=0) {
+    const max = Math.max(...data.map(d => d.count), 1);
+    document.getElementById(containerId).innerHTML = data.map((d, i) => `
+      <div class="bar-row">
+        <span>${d._id || 'Unknown'}</span>
+        <div style="flex:1"><div class="bar-fill" style="width:${Math.round((d.count/max)*100)}%;background:${COLORS[(i+colorOffset)%COLORS.length]}"></div></div>
+        <span class="bar-count">${d.count}</span>
+      </div>`).join('') || '<p style="color:var(--text-muted);font-size:13px">No data</p>';
+  }
+
+  async function load() {
+    try {
+      const [welf, compRes] = await Promise.all([AdminAPI.welfare(), AdminAPI.compliance()]);
+      const w = welf.data;
+      students = compRes.data.students;
+
+      document.getElementById('subtitle').textContent = `${students.length} total enrollments across all programs`;
+
+      const avgXP = w.avgXP || 0; const avgStreak = w.avgStreak || 0;
+      document.getElementById('demo-tiles').innerHTML = [
+        { val: students.length, label:'Total Students' },
+        { val: (w.byProgram.find(p => p._id === 'Basera-e-Tabassum')?.count || 0), label:'Basera-e-Tabassum' },
+        { val: (w.byProgram.find(p => p._id === 'Foster A Home')?.count || 0), label:'Foster A Home' },
+        { val: (w.byProgram.find(p => p._id === "Rah-e-Niswan")?.count || 0), label:'Rah-e-Niswan' },
+        { val: avgXP, label:'Avg XP Points' },
+        { val: avgStreak + 'd', label:'Avg Streak' }
+      ].map(t => `<div class="demo-card"><div class="demo-val">${t.val}</div><div class="demo-label">${t.label}</div></div>`).join('');
+
+      barChart('chart-program', w.byProgram, 0);
+      barChart('chart-gender', w.byGender, 2);
+      barChart('chart-home', w.byHomeGroup, 1);
+      barChart('chart-bg', w.byBackground.filter(b => b._id), 3);
+      const ageRows = Object.entries(w.ageDist).map(([k, v]) => ({ _id: k, count: v }));
+      barChart('chart-age', ageRows, 4);
+      document.getElementById('chart-avg').innerHTML = `
+        <div style="font-size:13px;margin-bottom:8px"><span style="color:var(--text-muted)">Avg XP</span> <strong style="color:#6366f1">${avgXP}</strong></div>
+        <div style="font-size:13px;margin-bottom:8px"><span style="color:var(--text-muted)">Avg Streak</span> <strong style="color:#22c55e">${avgStreak} days</strong></div>
+        <div style="font-size:13px"><span style="color:var(--text-muted)">Houses</span> <strong style="color:#a78bfa">${w.byHomeGroup.length}</strong></div>`;
+
+      renderTable();
+    } catch (e) {
+      document.getElementById('students-tbody').innerHTML = `<tr><td colspan="8" style="color:#ef4444;padding:20px">${e.message}</td></tr>`;
+    }
+  }
+
+  function renderTable() {
+    const search = document.getElementById('search').value.toLowerCase();
+    const prog = document.getElementById('filter-prog').value;
+    const house = document.getElementById('filter-house').value;
+
+    const rows = students.filter(s =>
+      (!search || s.user?.name?.toLowerCase().includes(search) || s.studentId?.toLowerCase().includes(search)) &&
+      (!prog || s.bwfProgram === prog) &&
+      (!house || s.homeGroup === house)
+    );
+
+    if (!rows.length) {
+      document.getElementById('students-tbody').innerHTML = `<tr><td colspan="8" style="text-align:center;padding:30px;color:var(--text-muted)">No students match filters</td></tr>`;
+      return;
+    }
+    document.getElementById('students-tbody').innerHTML = rows.map(s => `
+      <tr>
+        <td>${s.user?.name||'—'}</td>
+        <td style="font-size:11px;color:var(--text-muted)">${s.studentId||'—'}</td>
+        <td>${s.homeGroup||'—'}</td>
+        <td style="font-size:12px">${s.bwfProgram||'—'}</td>
+        <td>${s.education?.currentClass||'—'}</td>
+        <td style="font-size:12px;color:var(--text-muted)">${s.familyDetails?.background||'—'}</td>
+        <td>${s.totalPoints||0}</td>
+        <td>${s.guardianConsent ? '<span style="color:#22c55e;font-size:13px">✅</span>' : '<span style="color:#ef4444;font-size:13px">❌</span>'}</td>
+      </tr>`).join('');
+  }
+  load();
+</script>
+</body>
+</html>

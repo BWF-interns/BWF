@@ -44,11 +44,28 @@ const studentSchema = new mongoose.Schema({
     level: { type: Number, default: 1 },
     streak: { type: Number, default: 0 },
     lastActiveDate: { type: Date },
-    // Metadata
+    // BWF Program
+    bwfProgram: {
+        type: String,
+        enum: ['Basera-e-Tabassum', 'Foster A Home', 'Rah-e-Niswan', ''],
+        default: 'Basera-e-Tabassum'
+    },
+    // Admin
     admittedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     roomNumber: { type: String },
-    homeGroup: { type: String, default: 'House A' }, // links student to housemother's group
-    guardianConsent: { type: Boolean, default: false }, // DPDP Act 2023 compliance
+    homeGroup: { type: String, default: 'House A' },
+    // DPDP Act 2023 — Consent Governance
+    guardianConsent: { type: Boolean, default: false }, // quick boolean for housemother UI
+    dpdpConsent: {
+        isVerified: { type: Boolean, default: false },
+        verifiedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        verificationMethod: { type: String, enum: ['Offline Form', 'Digital Signature', ''], default: '' },
+        auditTrail: [{
+            action: { type: String },
+            changedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+            timestamp: { type: Date, default: Date.now }
+        }]
+    },
     joinDate: { type: Date, default: Date.now }
 }, { timestamps: true });
 

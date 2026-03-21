@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>BWF — Media Oversight</title>
+  <link rel="stylesheet" href="/css/staff.css"/>
+  <style>
+    :root { --primary:#6366f1; --primary-dim:rgba(99,102,241,0.15); --accent:#a78bfa; }
+    .media-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px; }
+    .media-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); overflow:hidden; }
+    .media-img-wrap { width:100%; height:180px; background:var(--bg-secondary); display:flex; align-items:center; justify-content:center; font-size:60px; position:relative; }
+    .media-img-wrap img { width:100%;height:100%;object-fit:cover; }
+    .hof-tag { position:absolute; top:8px; right:8px; background:linear-gradient(135deg,#f59e0b,#fbbf24); color:#000; border-radius:10px; padding:3px 8px; font-size:10px; font-weight:800; }
+    .media-body { padding:14px; }
+    .media-student { font-size:13px; font-weight:600; color:var(--text-primary); }
+    .media-meta { font-size:12px; color:var(--text-muted); margin-top:2px; margin-bottom:10px; }
+    .checklist { margin-bottom:12px; }
+    .check-item { display:flex; align-items:center; gap:8px; font-size:12px; color:var(--text-secondary); padding:3px 0; }
+    .check-item .dot { width:8px;height:8px;border-radius:50%;flex-shrink:0; }
+    .dot-ok { background:#22c55e; }
+    .dot-warn { background:#f97316; }
+    .dot-unknown { background:#6b7280; }
+    .media-actions { display:flex; gap:8px; flex-wrap:wrap; }
+    .tab-bar { display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
+    .tab { padding:7px 16px; border-radius:20px; font-size:13px; font-weight:600; cursor:pointer; border:1px solid var(--border); background:transparent; color:var(--text-muted); transition:0.15s; }
+    .tab.active { background:var(--primary-dim); color:var(--primary); border-color:var(--primary); }
+    .empty-msg { text-align:center; padding:60px 20px; color:var(--text-muted); }
+    .empty-msg .emoji { font-size:48px; display:block; margin-bottom:12px; }
+    .note-tag { font-size:11px; background:rgba(99,102,241,0.1); color:#a78bfa; border-radius:6px; padding:2px 8px; margin-top:4px; display:inline-block; }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">🌏</div>
+      <div class="logo-text"><h2>BWF Portal</h2><span class="staff-badge" style="background:rgba(99,102,241,0.2);color:#818cf8">Admin</span></div>
+    </div>
+    <div class="sidebar-staff">
+      <div class="staff-card">
+        <div class="staff-avatar" id="sb-staff-avatar" style="background:linear-gradient(135deg,#6366f1,#a78bfa)">AD</div>
+        <div class="staff-info"><h4 id="sb-staff-name">Loading...</h4><p id="sb-staff-role">Administrator</p></div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="/admin/dashboard" class="nav-link"><span class="nav-icon">📊</span> Dashboard</a>
+      <a href="/admin/compliance" class="nav-link"><span class="nav-icon">🔒</span> DPDP Compliance</a>
+      <a href="/admin/students" class="nav-link"><span class="nav-icon">👩‍🎓</span> Student Census</a>
+      <a href="/admin/staff" class="nav-link"><span class="nav-icon">👥</span> Staff Management</a>
+      <a href="/admin/finance" class="nav-link"><span class="nav-icon">💰</span> Finance</a>
+      <a href="/admin/media" class="nav-link active"><span class="nav-icon">📸</span> Media Oversight</a>
+    </nav>
+    <div class="sidebar-bottom"><button class="logout-btn" onclick="staffLogout()"><span>🚪</span> Sign Out</button></div>
+  </aside>
+
+  <div class="main-content">
+    <header class="topbar">
+      <div style="display:flex;align-items:center;gap:14px">
+        <button class="hamburger" id="hamburger">☰</button>
+        <div class="topbar-left"><h1>📸 Media Oversight</h1><p>Dignity verification, de-identification audit, Hall of Fame management</p></div>
+      </div>
+    </header>
+
+    <div class="page-content fade-in">
+      <!-- Tabs -->
+      <div class="tab-bar">
+        <button class="tab active" onclick="switchTab('approved',this)">✅ Approved (<span id="count-approved">...</span>)</button>
+        <button class="tab" onclick="switchTab('hall_of_fame',this)">⭐ Hall of Fame (<span id="count-hof">...</span>)</button>
+        <button class="tab" onclick="switchTab('pending',this)">⏳ Pending Review (<span id="count-pending">...</span>)</button>
+        <button class="tab" onclick="switchTab('rejected',this)">❌ Rejected (<span id="count-rejected">...</span>)</button>
+      </div>
+
+      <!-- Media grid -->
+      <div class="media-grid" id="media-grid">
+        <div class="empty-msg" style="grid-column:1/-1"><span class="emoji">⏳</span><p>Loading posts...</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/js/staff-api.js"></script>
+<script>
+  requireAdmin();
+  initStaffSidebar();
+
+  let currentTab = 'approved';
+  let allPosts = {};
+
+  const SAFEGUARDING = [
+    'No identifiable landmarks or street signs visible',
+    'No school uniforms or institution names visible',
+    'Child depicted with dignity (not as object of pity)',
+    'Explicit guardian consent recorded before sharing externally'
+  ];
+
+  async function load() {
+    try {
+      // We fetch all statuses separately
+      const [approved, pending] = await Promise.all([
+        StaffPostsAPI.approved(),
+        StaffPostsAPI.pending()
+      ]);
+
+      const approvedPosts = approved.data || approved || [];
+      const pendingPosts = pending.data || pending || [];
+
+      allPosts.approved = approvedPosts.filter(p => p.status === 'approved' && !p.hallOfFame);
+      allPosts.hall_of_fame = approvedPosts.filter(p => p.hallOfFame);
+      allPosts.pending = pendingPosts;
+      allPosts.rejected = approvedPosts.filter(p => p.status === 'rejected');
+
+      document.getElementById('count-approved').textContent = allPosts.approved.length;
+      document.getElementById('count-hof').textContent = allPosts.hall_of_fame.length;
+      document.getElementById('count-pending').textContent = allPosts.pending.length;
+      document.getElementById('count-rejected').textContent = allPosts.rejected.length;
+
+      renderTab();
+    } catch (e) {
+      document.getElementById('media-grid').innerHTML = `<div class="empty-msg" style="grid-column:1/-1"><span class="emoji">❌</span><p>${e.message}</p></div>`;
+    }
+  }
+
+  function switchTab(tab, btn) {
+    currentTab = tab;
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    renderTab();
+  }
+
+  function renderTab() {
+    const posts = allPosts[currentTab] || [];
+    if (!posts.length) {
+      document.getElementById('media-grid').innerHTML = `<div class="empty-msg" style="grid-column:1/-1"><span class="emoji">${currentTab==='pending'?'🎉':'📭'}</span><h3>${currentTab==='pending'?'All clear — no pending posts!':'No posts here'}</h3></div>`;
+      return;
+    }
+
+    document.getElementById('media-grid').innerHTML = posts.map(p => {
+      const hasImage = p.imageUrl;
+      const student = p.student?.user?.name || p.author?.name || 'Unknown';
+      const house = p.student?.homeGroup || '—';
+      const date = p.createdAt ? new Date(p.createdAt).toLocaleDateString('en-IN') : '—';
+
+      // Pseudo-safeguarding check based on reviewNote presence
+      const reviewed = !!p.reviewNote;
+      const checks = SAFEGUARDING.map((c, i) => ({
+        text: c,
+        status: reviewed ? 'ok' : 'unknown'
+      }));
+
+      return `<div class="media-card">
+        <div class="media-img-wrap">
+          ${hasImage ? `<img src="${p.imageUrl}" alt="Post"/>` : `<span>📷</span>`}
+          ${p.hallOfFame ? '<div class="hof-tag">⭐ Hall of Fame</div>' : ''}
+          ${p.status === 'approved' ? '<div style="position:absolute;top:8px;left:8px;background:rgba(34,197,94,0.9);color:#fff;border-radius:6px;padding:2px 8px;font-size:10px;font-weight:700">✅ Approved</div>' : ''}
+          ${p.status === 'rejected' ? '<div style="position:absolute;top:8px;left:8px;background:rgba(239,68,68,0.9);color:#fff;border-radius:6px;padding:2px 8px;font-size:10px;font-weight:700">❌ Rejected</div>' : ''}
+          ${p.status === 'pending_review' ? '<div style="position:absolute;top:8px;left:8px;background:rgba(245,158,11,0.9);color:#fff;border-radius:6px;padding:2px 8px;font-size:10px;font-weight:700">⏳ Pending</div>' : ''}
+        </div>
+        <div class="media-body">
+          <div class="media-student">${student}</div>
+          <div class="media-meta">${house} · ${date}</div>
+          ${p.caption ? `<div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px;font-style:italic">"${p.caption.slice(0,80)}"</div>` : ''}
+          <div class="checklist">
+            ${checks.map(c => `<div class="check-item"><div class="dot dot-${c.status}"></div><span>${c.text}</span></div>`).join('')}
+          </div>
+          ${p.reviewNote ? `<div class="note-tag">📝 ${p.reviewNote}</div>` : ''}
+          ${p.status === 'pending_review' ? `
+            <div class="media-actions" style="margin-top:10px">
+              <button class="btn btn-sm btn-primary" onclick="actionPost('${p._id}','approve',false)">✅ Approve</button>
+              <button class="btn btn-sm btn-secondary" onclick="actionPost('${p._id}','approve',true)" style="color:#f59e0b">⭐ Hall of Fame</button>
+              <button class="btn btn-sm btn-secondary" style="color:#ef4444" onclick="actionPost('${p._id}','reject',false)">❌ Reject</button>
+            </div>` : ''}
+          ${p.hallOfFame ? `<button class="btn btn-sm btn-secondary" style="margin-top:8px;color:#f97316" onclick="actionPost('${p._id}','approve',false)">Remove from HoF</button>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  async function actionPost(id, action, hallOfFame) {
+    const note = hallOfFame ? 'Featured in Hall of Fame by Admin' : '';
+    try {
+      await StaffPostsAPI.review(id, action, hallOfFame, note);
+      showStaffToast('Done', action === 'approve' ? (hallOfFame ? '⭐ Added to Hall of Fame' : '✅ Post approved') : '❌ Post rejected', 'success');
+      load();
+    } catch (e) { showStaffToast('Error', e.message, 'error'); }
+  }
+
+  load();
+</script>
+</body>
+</html>

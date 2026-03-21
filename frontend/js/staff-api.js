@@ -154,3 +154,38 @@ function timeAgo(dateStr) {
     const m = Math.floor(diff / 60000), h = Math.floor(m / 60), d = Math.floor(h / 24);
     if (d > 0) return `${d}d ago`; if (h > 0) return `${h}h ago`; if (m > 0) return `${m}m ago`; return 'Just now';
 }
+
+// ── Admin Auth Guard ─────────────────────────────────
+function requireAdmin() {
+    const token = StaffTokenManager.get();
+    const user = StaffTokenManager.getUser();
+    if (!token || !user) { window.location.href = '/'; return false; }
+    if (!['admin', 'founder'].includes(user.role)) {
+        StaffTokenManager.clear(); StaffTokenManager.clearUser();
+        window.location.href = '/'; return false;
+    }
+    return true;
+}
+
+// ── Admin API ────────────────────────────────────────
+const AdminAPI = {
+    overview:    ()        => staffFetch('/api/admin/overview'),
+    welfare:     ()        => staffFetch('/api/admin/welfare'),
+    compliance:  ()        => staffFetch('/api/admin/compliance'),
+    risk:        ()        => staffFetch('/api/admin/risk'),
+    finance:     ()        => staffFetch('/api/admin/finance'),
+    staff:       ()        => staffFetch('/api/admin/staff'),
+    donors:      ()        => staffFetch('/api/admin/donors'),
+    recordConsent: (studentId, method) =>
+        staffFetch(`/api/admin/compliance/${studentId}`, { method: 'PUT', body: JSON.stringify({ verificationMethod: method, action: 'Consent verified by admin' }) }),
+    addExpense:  (data)    => staffFetch('/api/admin/expenses', { method: 'POST', body: JSON.stringify(data) }),
+    approveExpense: (id, status) =>
+        staffFetch(`/api/admin/expenses/${id}`, { method: 'PUT', body: JSON.stringify({ status }) }),
+    addDonor: (data)       => staffFetch('/api/admin/donors', { method: 'POST', body: JSON.stringify(data) }),
+};
+
+// ── Currency helper ──────────────────────────────────
+function formatINR(n) {
+    if (!n) return '₹0';
+    return '₹' + Number(n).toLocaleString('en-IN');
+}

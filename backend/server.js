@@ -18,6 +18,7 @@ const roadmapRoutes = require('./routes/roadmap');
 const postRoutes = require('./routes/posts');
 const notificationRoutes = require('./routes/notifications');
 const staffRoutes = require('./routes/staff');
+const adminRoutes = require('./routes/admin');
 
 const app = express();
 
@@ -46,6 +47,7 @@ app.use('/api/roadmap', roadmapRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/staff', staffRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Student portal
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, '../frontend/pages/login.html')));
@@ -72,7 +74,13 @@ app.get('/dean/requests', (req, res) => res.sendFile(path.join(__dirname, '../fr
 app.get('/dean/gallery', (req, res) => res.sendFile(path.join(__dirname, '../frontend/dean/gallery.html')));
 app.get('/dean/notify', (req, res) => res.sendFile(path.join(__dirname, '../frontend/dean/notify.html')));
 
-// Global Error Handler
+// Admin portal
+app.get('/admin/dashboard', (req, res) => res.sendFile(path.join(__dirname, '../frontend/admin/dashboard.html')));
+app.get('/admin/compliance', (req, res) => res.sendFile(path.join(__dirname, '../frontend/admin/compliance.html')));
+app.get('/admin/students', (req, res) => res.sendFile(path.join(__dirname, '../frontend/admin/students.html')));
+app.get('/admin/staff', (req, res) => res.sendFile(path.join(__dirname, '../frontend/admin/staff.html')));
+app.get('/admin/finance', (req, res) => res.sendFile(path.join(__dirname, '../frontend/admin/finance.html')));
+app.get('/admin/media', (req, res) => res.sendFile(path.join(__dirname, '../frontend/admin/media.html')));
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;

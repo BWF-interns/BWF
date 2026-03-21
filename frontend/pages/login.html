@@ -307,12 +307,11 @@
       </form>
       <div class="demo-accounts">
         <h4>🧪 Demo Accounts</h4>
-        <button class="demo-btn" onclick="fillDemo('aisha@bwf.org','student123')">👩‍🎓 Aisha (Student — 320 pts, Grade
-          7)</button>
-        <button class="demo-btn" onclick="fillDemo('razia@bwf.org','student123')">👩‍🎓 Razia (Student — 540 pts, Top
-          Rank)</button>
-        <button class="demo-btn" onclick="fillDemo('admin@bwf.org','admin123')">👩‍💼 Admin</button>
-        <button class="demo-btn" onclick="fillDemo('dean@bwf.org','dean123')">👩‍🏫 Dean</button>
+        <button class="demo-btn" onclick="fillDemo('aisha@bwf.org','student123')">👩‍🎓 Aisha (Student)</button>
+        <button class="demo-btn" onclick="fillDemo('razia@bwf.org','student123')">👩‍🎓 Razia (Student)</button>
+        <button class="demo-btn" onclick="fillDemo('housemother@bwf.org','house123')">🏠 Sister Zara (Housemother)</button>
+        <button class="demo-btn" onclick="fillDemo('dean@bwf.org','dean123')">👩‍🏫 Dr. Fatima (Dean)</button>
+        <button class="demo-btn" onclick="fillDemo('admin@bwf.org','admin123')">🔐 Admin</button>
       </div>
     </div>
   </div>
@@ -324,7 +323,8 @@
       const user = TokenManager.getUser();
       if (user?.role === 'student') { window.location.href = '/dashboard'; }
       else if (user?.role === 'housemother') { window.location.href = '/housemother/dashboard'; }
-      else if (['dean', 'admin', 'founder'].includes(user?.role)) { window.location.href = '/dean/dashboard'; }
+      else if (user?.role === 'dean') { window.location.href = '/dean/dashboard'; }
+      else if (['admin', 'founder'].includes(user?.role)) { window.location.href = '/admin/dashboard'; }
     }
 
     document.getElementById('login-form').addEventListener('submit', async (e) => {
@@ -346,7 +346,11 @@
         if (data.studentId) TokenManager.setStudentId(data.studentId);
         showToast('Welcome back!', `Hello, ${data.user.name.split(' ')[0]}! 🌟`, 'success');
         const role = data.user.role;
-        const dest = role === 'student' ? '/dashboard' : role === 'housemother' ? '/housemother/dashboard' : '/dean/dashboard';
+        const dest = role === 'student' ? '/dashboard'
+          : role === 'housemother' ? '/housemother/dashboard'
+          : role === 'dean' ? '/dean/dashboard'
+          : ['admin', 'founder'].includes(role) ? '/admin/dashboard'
+          : '/dean/dashboard';
         setTimeout(() => { window.location.href = dest; }, 800);
       } catch (error) {
         errorEl.textContent = error.message || 'Login failed. Please check your credentials.';
