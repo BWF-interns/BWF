@@ -44,7 +44,12 @@ router.get('/overview', protect, authorize(...ADMIN), async (req, res, next) => 
             Expense.aggregate([{ $match: { status: 'Paid' } }, { $group: { _id: null, total: { $sum: '$amount' } } }]),
             Donor.aggregate([{ $group: { _id: null, total: { $sum: { $reduce: { input: '$donationHistory', initialValue: 0, in: { $add: ['$$value', '$$this.amount'] } } } } } }]),
             Expense.aggregate([{ $match: { createdAt: { $gte: startOfMonth } } }, { $group: { _id: null, total: { $sum: '$amount' } } }]),
-            Donor.aggregate([{ $unwind: '$donationHistory' }, { $match: { 'donationHistory.date': { $gte: startOfYear } } }, { $group: { _id: null, total: { $sum: '$donationHistory.amount' } } }]),
+            Donor.aggregate([
+                { $unwind: '$donationHistory' },
+                { $addFields: { 'donationHistory.dateConverted': { $toDate: '$donationHistory.date' } } },
+                { $match: { 'donationHistory.dateConverted': { $gte: startOfYear } } },
+                { $group: { _id: null, total: { $sum: '$donationHistory.amount' } } }
+            ]),
             Expense.countDocuments({ status: 'Pending' })
         ]);
 
@@ -252,17 +257,18 @@ router.get('/finance', protect, authorize(...ADMIN), async (req, res, next) => {
         ] = await Promise.all([
             Expense.aggregate([{ $group: { _id: '$category', total: { $sum: '$amount' }, count: { $sum: 1 } } }]),
             Expense.aggregate([
-                { $match: { createdAt: { $gte: startOfYear } } },
-                { $group: { _id: { month: { $month: '$createdAt' } }, total: { $sum: '$amount' } } },
+                { $match: { date: { $gte: startOfYear } } },
+                { $group: { _id: { month: { $month: '$date' } }, total: { $sum: '$amount' } } },
                 { $sort: { '_id.month': 1 } }
             ]),
             Donor.aggregate([
                 { $unwind: '$donationHistory' },
-                { $match: { 'donationHistory.date': { $gte: startOfYear } } },
-                { $group: { _id: { month: { $month: 'donationHistory.date' } }, total: { $sum: '$donationHistory.amount' } } },
+                { $addFields: { 'dh_date': { $toDate: '$donationHistory.date' } } },
+                { $match: { 'dh_date': { $gte: startOfYear } } },
+                { $group: { _id: { month: { $month: '$dh_date' } }, total: { $sum: '$donationHistory.amount' } } },
                 { $sort: { '_id.month': 1 } }
             ]),
-            Expense.find().populate('approvedBy', 'name').populate('loggedBy', 'name').sort('-createdAt').limit(50),
+            Expense.find().populate('approvedBy', 'name').populate('loggedBy', 'name').sort({ date: -1, createdAt: -1 }).limit(50),
             Student.countDocuments(),
             Donor.aggregate([{ $group: { _id: null, totalDonors: { $sum: 1 }, totalRaised: { $sum: { $reduce: { input: '$donationHistory', initialValue: 0, in: { $add: ['$$value', '$$this.amount'] } } } } } }]),
             Donor.countDocuments({ isRecurring: true })

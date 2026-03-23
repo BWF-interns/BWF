@@ -1,4 +1,6 @@
-require('dotenv').config();
+if (process.env.NODE_ENV !== 'production') {
+    require('dotenv').config({ path: require('path').resolve(__dirname, '../.env') });
+}
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -27,7 +29,10 @@ connectDB();
 
 // Middlewares
 app.use(helmet({ contentSecurityPolicy: false }));
-app.use(cors());
+app.use(cors({
+    origin: process.env.NODE_ENV === 'production' ? '*' : ['http://localhost:3000', 'http://localhost:5000', 'http://127.0.0.1:3000'],
+    credentials: true
+}));
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
