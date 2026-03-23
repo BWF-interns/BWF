@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>BWF Admin — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../css/staff.css"/>
+<style>
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px;margin-bottom:24px}
+.kpi-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:18px;position:relative;overflow:hidden}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#6366f1,#a78bfa)}
+.kpi-card.flag::before{background:linear-gradient(90deg,#ef4444,#f97316)}
+.kpi-val{font-size:26px;font-weight:900;font-family:'Outfit',sans-serif;color:#f1f5f9}
+.kpi-lbl{font-size:12px;color:#64748b;margin-top:4px}
+.kpi-icon{font-size:20px;margin-bottom:6px}
+.chart-box{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:18px;margin-bottom:20px}
+.chart-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#64748b;margin-bottom:14px}
+.bar-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.bar-lbl{width:130px;text-align:right;font-size:12px;color:#64748b;flex-shrink:0}
+.bar-track{flex:1;height:18px;background:rgba(255,255,255,0.05);border-radius:4px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,#6366f1,#a78bfa);transition:width 0.5s}
+.bar-count{font-size:12px;color:#94a3b8;min-width:26px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.radar-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.radar-item{text-align:center}
+.radar-score{font-size:22px;font-weight:800;font-family:'Outfit',sans-serif}
+.radar-lbl{font-size:11px;color:#64748b}
+.risk-bar{height:5px;border-radius:3px;background:rgba(255,255,255,0.05);margin-top:4px;overflow:hidden}
+.risk-fill{height:100%;border-radius:3px}
+.warning-item{display:flex;gap:12px;align-items:flex-start;padding:10px;border:1px solid rgba(255,255,255,0.06);border-radius:8px;margin-bottom:8px}
+.warning-title{font-size:13px;font-weight:600;color:#f1f5f9}
+.warning-sub{font-size:12px;color:#64748b}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeIn 0.3s ease}
+</style>
+</head>
+<body>
+<div class="app-layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">🌏</div>
+      <div class="logo-text"><h2>BWF Portal</h2><p id="staff-badge" style="font-size:10px;color:#a78bfa;font-weight:700;margin-top:2px">DEMO MODE</p></div>
+    </div>
+    <div class="sidebar-staff">
+      <div class="staff-card">
+        <div class="staff-avatar" id="staff-avatar" style="background:linear-gradient(135deg,#6366f1,#a78bfa);color:#fff;font-size:13px;font-weight:800">RA</div>
+        <div class="staff-info"><h4 id="staff-name">Ravi Admin</h4><p id="staff-role">Administrator</p></div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html" class="nav-link active"><span class="nav-icon">📊</span>Dashboard</a>
+      <a href="compliance.html" class="nav-link"><span class="nav-icon">🔒</span>DPDP Compliance</a>
+      <a href="students.html"   class="nav-link"><span class="nav-icon">👩‍🎓</span>Student Census</a>
+      <a href="staff.html"      class="nav-link"><span class="nav-icon">👥</span>Staff Management</a>
+      <a href="finance.html"    class="nav-link"><span class="nav-icon">💰</span>Finance</a>
+      <a href="media.html"      class="nav-link"><span class="nav-icon">📸</span>Media Oversight</a>
+    </nav>
+    <div class="sidebar-bottom">
+      <button class="logout-btn" onclick="window.location.href='../index.html'">🚪 Back to Portal</button>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-left"><h1>📊 Admin Dashboard</h1><p id="topbar-sub">Loading overview...</p></div>
+      <div class="topbar-right"><span style="font-size:12px;color:#a78bfa;background:rgba(99,102,241,0.1);padding:4px 12px;border-radius:20px">🧪 Demo Mode</span></div>
+    </header>
+    <div class="page-content fade-in" id="page-content">
+      <div style="text-align:center;padding:60px;color:#64748b">Loading...</div>
+    </div>
+  </div>
+</div>
+<script src="../js/demo-data.js"></script>
+<script>
+async function init() {
+  const [ov, welf, risk] = await Promise.all([DemoAPI.overview(), DemoAPI.welfare(), DemoAPI.risk()]);
+  const d = ov.data, w = welf.data, r = risk.data;
+  document.getElementById('topbar-sub').textContent = `${d.totalStudents} students · ${d.activeStaff} staff · ${formatINR(d.thisYearDonations)} raised this year`;
+
+  const kpis = [
+    {icon:'👩‍🎓', val:d.totalStudents, lbl:'Total Students'},
+    {icon:'👥', val:d.activeStaff, lbl:'Active Staff'},
+    {icon:'🔒', val:d.consentMissing, lbl:'Consent Missing', flag:d.consentMissing>0},
+    {icon:'📸', val:d.pendingPosts, lbl:'Pending Posts', flag:d.pendingPosts>3},
+    {icon:'🚨', val:d.urgentRequests, lbl:'Urgent Requests', flag:d.urgentRequests>0},
+    {icon:'💰', val:formatINR(d.thisYearDonations), lbl:'Donations This Year'},
+    {icon:'📤', val:formatINR(d.thisMonthExpenses), lbl:'Expenses This Month'},
+    {icon:'⏰', val:d.pendingExpenses, lbl:'Pending Expenses', flag:d.pendingExpenses>0},
+  ];
+
+  const maxProg = Math.max(...w.byProgram.map(p=>p.count));
+  const maxHouse = Math.max(...w.byHomeGroup.map(h=>h.count));
+
+  const radarItems = [
+    {lbl:'Medical', score:r.riskRadar.medicalRisk},
+    {lbl:'Engagement', score:r.riskRadar.engagementRisk},
+    {lbl:'Urgency', score:r.riskRadar.urgencyRisk},
+    {lbl:'Consent', score:r.riskRadar.consentRisk},
+    {lbl:'Media', score:r.riskRadar.mediaRisk},
+  ];
+
+  document.getElementById('page-content').innerHTML = `
+    <div class="kpi-grid">
+      ${kpis.map(k=>`
+        <div class="kpi-card ${k.flag?'flag':''}">
+          <div class="kpi-icon">${k.icon}</div>
+          <div class="kpi-val">${k.val}</div>
+          <div class="kpi-lbl">${k.lbl}</div>
+        </div>`).join('')}
+    </div>
+    <div class="grid-2">
+      <div class="chart-box">
+        <div class="chart-title">📚 Program Enrollment</div>
+        ${w.byProgram.map(p=>`
+          <div class="bar-row">
+            <span class="bar-lbl">${p._id}</span>
+            <div class="bar-track"><div class="bar-fill" style="width:${Math.round((p.count/maxProg)*100)}%"></div></div>
+            <span class="bar-count">${p.count}</span>
+          </div>`).join('')}
+      </div>
+      <div class="chart-box">
+        <div class="chart-title">🏠 Home Group Distribution</div>
+        ${w.byHomeGroup.map(h=>`
+          <div class="bar-row">
+            <span class="bar-lbl">${h._id}</span>
+            <div class="bar-track"><div class="bar-fill" style="width:${Math.round((h.count/maxHouse)*100)}%;background:linear-gradient(90deg,#a78bfa,#6366f1)"></div></div>
+            <span class="bar-count">${h.count}</span>
+          </div>`).join('')}
+      </div>
+      <div class="chart-box">
+        <div class="chart-title">🚨 Risk Radar</div>
+        <div class="radar-grid">
+          ${radarItems.map(it=>{
+            const color = it.score>=7?'#ef4444':it.score>=4?'#f97316':'#22c55e';
+            return `<div class="radar-item">
+              <div class="radar-score" style="color:${color}">${it.score}/10</div>
+              <div class="radar-lbl">${it.lbl}</div>
+              <div class="risk-bar"><div class="risk-fill" style="width:${it.score*10}%;background:${color}"></div></div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+      <div class="chart-box">
+        <div class="chart-title">⚠️ Early Warnings</div>
+        ${r.medicalSpike?`<div class="warning-item"><span>🚑</span><div><div class="warning-title">Medical Request Spike</div><div class="warning-sub">${r.medicalRequestsThisWeek} this week vs ${r.medicalRequestsLastWeek} last week</div></div></div>`:''}
+        ${d.consentMissing>0?`<div class="warning-item"><span>⚖️</span><div><div class="warning-title">${d.consentMissing} Missing Consent</div><div class="warning-sub">DPDP Act 2023 compliance risk</div></div></div>`:''}
+        ${r.disengagedCount>0?`<div class="warning-item"><span>📉</span><div><div class="warning-title">${r.disengagedCount} Students Disengaged</div><div class="warning-sub">0-streak — check-in needed</div></div></div>`:''}
+        ${d.urgentRequests>0?`<div class="warning-item"><span>🚨</span><div><div class="warning-title">${d.urgentRequests} Urgent Requests</div><div class="warning-sub">Requires immediate attention</div></div></div>`:''}
+      </div>
+    </div>`;
+}
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>BWF Admin — Finance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../css/staff.css"/>
+<style>
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;margin-bottom:24px}
+.kpi-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:18px;position:relative;overflow:hidden}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#6366f1,#a78bfa)}
+.kpi-val{font-size:22px;font-weight:900;font-family:'Outfit',sans-serif;color:#f1f5f9;margin-bottom:4px}
+.kpi-lbl{font-size:12px;color:#64748b}
+.kpi-sub{font-size:11px;color:#94a3b8;margin-top:2px}
+.chart-box{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:18px;margin-bottom:20px}
+.chart-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#64748b;margin-bottom:14px}
+.bar-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.bar-lbl{width:200px;text-align:right;font-size:11px;color:#64748b;flex-shrink:0}
+.bar-track{flex:1;height:18px;background:rgba(255,255,255,0.05);border-radius:4px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px}
+.bar-count{font-size:11px;color:#94a3b8;min-width:70px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.ratio-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ratio-item{text-align:center;padding:12px;border:1px solid rgba(255,255,255,0.07);border-radius:10px}
+.ratio-val{font-size:22px;font-weight:800;font-family:'Outfit',sans-serif}
+.ratio-lbl{font-size:11px;color:#64748b;margin-top:2px}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeIn 0.3s ease}
+</style>
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><div class="logo-icon">🌏</div><div class="logo-text"><h2>BWF Portal</h2><p style="font-size:10px;color:#a78bfa;font-weight:700;margin-top:2px">DEMO MODE</p></div></div>
+    <div class="sidebar-staff"><div class="staff-card"><div class="staff-avatar" style="background:linear-gradient(135deg,#6366f1,#a78bfa);color:#fff;font-size:13px;font-weight:800">RA</div><div class="staff-info"><h4>Ravi Admin</h4><p>Administrator</p></div></div></div>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html"  class="nav-link"><span class="nav-icon">📊</span>Dashboard</a>
+      <a href="compliance.html" class="nav-link"><span class="nav-icon">🔒</span>DPDP Compliance</a>
+      <a href="students.html"   class="nav-link"><span class="nav-icon">👩‍🎓</span>Student Census</a>
+      <a href="staff.html"      class="nav-link"><span class="nav-icon">👥</span>Staff Management</a>
+      <a href="finance.html"    class="nav-link active"><span class="nav-icon">💰</span>Finance</a>
+      <a href="media.html"      class="nav-link"><span class="nav-icon">📸</span>Media Oversight</a>
+    </nav>
+    <div class="sidebar-bottom"><button class="logout-btn" onclick="window.location.href='../index.html'">🚪 Back to Portal</button></div>
+  </aside>
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-left"><h1>💰 Financial Health</h1><p>Fundraising ROI, program efficiency, and budget transparency</p></div>
+      <div class="topbar-right"><span style="font-size:12px;color:#a78bfa;background:rgba(99,102,241,0.1);padding:4px 12px;border-radius:20px">🧪 Demo Mode</span></div>
+    </header>
+    <div class="page-content fade-in" id="page-content"><div style="text-align:center;padding:60px;color:#64748b">Loading...</div></div>
+  </div>
+</div>
+<script src="../js/demo-data.js"></script>
+<script>
+const CAT_COLORS = {'Program/Mission':'#22c55e','Overhead/Admin':'#ef4444','Medical Emergency':'#f97316','Fundraising Investment':'#6366f1'};
+async function init() {
+  const { data: d } = await DemoAPI.finance();
+  const max = Math.max(...d.expensesByCategory.map(c=>c.total));
+  const statusColor = {Paid:'#22c55e',Approved:'#60a5fa',Pending:'#f59e0b'};
+  const statusBg = {Paid:'rgba(34,197,94,0.12)',Approved:'rgba(59,130,246,0.12)',Pending:'rgba(245,158,11,0.12)'};
+
+  document.getElementById('page-content').innerHTML = `
+    <div class="kpi-grid">
+      ${[
+        {val:formatINR(d.totalRaised),      lbl:'Total Raised',           sub:'All time'},
+        {val:formatINR(d.totalExpenses),    lbl:'Total Expenses',          sub:'All paid'},
+        {val:formatINR(d.netBalance),       lbl:'Net Balance',             sub:''},
+        {val:d.programEfficiencyRatio+'%',  lbl:'Program Efficiency',      sub:'Goes to mission'},
+        {val:d.overheadRatio+'%',           lbl:'Overhead Ratio',          sub:'Admin costs'},
+        {val:d.fundraisingROI+'x',          lbl:'Fundraising ROI',         sub:'Per ₹ invested'},
+        {val:formatINR(d.costPerBeneficiary),lbl:'Cost / Beneficiary',     sub:'Per student'},
+        {val:d.donorRetentionRate+'%',      lbl:'Donor Retention',         sub:d.recurringDonors+'/'+d.totalDonors+' recurring'},
+      ].map(k=>`<div class="kpi-card"><div class="kpi-val">${k.val}</div><div class="kpi-lbl">${k.lbl}</div>${k.sub?`<div class="kpi-sub">${k.sub}</div>`:''}</div>`).join('')}
+    </div>
+    <div class="grid-2">
+      <div class="chart-box">
+        <div class="chart-title">📊 Expenses by Category</div>
+        ${d.expensesByCategory.map(c=>`<div class="bar-row">
+          <span class="bar-lbl">${c._id}</span>
+          <div class="bar-track"><div class="bar-fill" style="width:${Math.round((c.total/max)*100)}%;background:${CAT_COLORS[c._id]||'#6366f1'}"></div></div>
+          <span class="bar-count">${formatINR(c.total)}</span>
+        </div>`).join('')}
+      </div>
+      <div class="chart-box">
+        <div class="chart-title">📈 Key Financial Ratios</div>
+        <div class="ratio-grid">
+          ${[
+            {lbl:'Program Efficiency', val:d.programEfficiencyRatio+'%', color:'#22c55e'},
+            {lbl:'Overhead Ratio',     val:d.overheadRatio+'%',          color:'#ef4444'},
+            {lbl:'Fundraising ROI',    val:d.fundraisingROI+'x',         color:'#6366f1'},
+            {lbl:'Donor Retention',    val:d.donorRetentionRate+'%',      color:'#f59e0b'},
+          ].map(r=>`<div class="ratio-item"><div class="ratio-val" style="color:${r.color}">${r.val}</div><div class="ratio-lbl">${r.lbl}</div></div>`).join('')}
+        </div>
+      </div>
+    </div>
+    <div class="card-title" style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#64748b;margin-bottom:12px">📋 Recent Expenses</div>
+    <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;overflow:hidden">
+    <table>
+      <thead><tr><th>Title</th><th>Category</th><th>Amount</th><th>Date</th><th>Logged By</th><th>Status</th></tr></thead>
+      <tbody>
+        ${d.recentExpenses.map(e=>`<tr>
+          <td style="color:#f1f5f9;font-weight:500">${e.title}</td>
+          <td><span style="font-size:11px;font-weight:600;color:${CAT_COLORS[e.category]||'#6366f1'}">${e.category}</span></td>
+          <td style="font-weight:700;color:#f1f5f9">${formatINR(e.amount)}</td>
+          <td style="font-size:12px;color:#64748b">${e.date}</td>
+          <td style="font-size:12px;color:#94a3b8">${e.by}</td>
+          <td><span style="font-size:11px;font-weight:700;background:${statusBg[e.status]};color:${statusColor[e.status]};padding:3px 10px;border-radius:20px">${e.status}</span></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    </div>`;
+}
+init();
+</script>
+</body>
+</html>
