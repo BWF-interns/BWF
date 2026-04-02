@@ -1,0 +1,155 @@
+/* app/globals.css */
+
+.auth-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f7f8fa;
+}
+
+.auth-card {
+    background: #ffffff;
+    width: 100%;
+    max-width: 400px;
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    text-align: center;
+}
+
+.logo-section {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    text-align: left;
+    margin-bottom: 20px;
+}
+
+.lc-input {
+    width: 100%;
+    padding: 15px;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    font-size: 18px;
+    box-sizing: border-box; /* Crucial for width alignment */
+    margin-bottom: 30px;
+    transition: border-color 0.2s;
+}
+
+.lc-input:focus {
+    outline: none;
+    border-color: #3b515d;
+}
+
+.lc-btn-signin {
+    width: 100%;
+    background-color: #3b515d;
+    color: white;
+    padding: 12px;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 10px;
+    margin-bottom: 20px;
+}
+
+.auth-footer {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+    font-size: 18px;
+}
+
+.auth-footer a {
+    color: #6b7280;
+    text-decoration: none;
+}
+
+/* Animation for that "Reddit-slick" entrance */
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-slide-up {
+    animation: slideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Signup Hero Section */
+.signup-hero {
+    margin-bottom: 10px;
+}
+
+.status-badge {
+    display: inline-block;
+    background: #fef2f2;
+    color: #dc2626;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 25px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    border: 1px solid #fee2e2;
+}
+
+.hero-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 20px;
+}
+
+.hero-subtitle {
+    font-size: 16px;
+    color: #6b7280;
+    line-height: 1.5;
+}
+
+/* Instruction Card Styling */
+.instruction-card {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: left;
+    margin-bottom: 24px;
+}
+
+.instruction-card h3 {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+.step-list {
+    list-style: none;
+    padding: 0;
+}
+
+.step-list li {
+    font-size: 15px;
+    color: #4b5563;
+    margin-bottom: 10px;
+    padding-left: 18px;
+    position: relative;
+}
+
+.step-list li::before {
+    content: "•";
+    color: #3b515d;
+    font-weight: bold;
+    position: absolute;
+    left: 0;
+}

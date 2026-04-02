@@ -1,0 +1,733 @@
+/* =========================================
+   BWF WELLBEING PAGE — SAFE · WARM · GENTLE
+   ========================================= */
+
+.wb-page {
+  padding: 36px 40px 56px;
+  min-height: 100vh;
+  background: var(--bg-main);
+}
+
+/* ── HEADER ── */
+.wb-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 8px;
+  animation: fadeSlideUp 0.45s ease-out both;
+}
+
+.wb-eyebrow {
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 2.5px;
+  color: #db2777;
+  margin-bottom: 5px;
+}
+
+.wb-title {
+  font-size: 2.1rem;
+  font-weight: 900;
+  color: var(--text-primary);
+  letter-spacing: -0.8px;
+  line-height: 1;
+}
+
+.wb-subtitle {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  align-self: flex-end;
+  padding-bottom: 4px;
+}
+
+/* ── HERO BANNER ── */
+.wb-hero {
+  position: relative;
+  background: linear-gradient(130deg, #fce7f3 0%, #dbeafe 50%, #d1fae5 100%);
+  border-radius: 28px;
+  padding: 28px 30px 24px;
+  margin-bottom: 28px;
+  overflow: hidden;
+  border: 1.5px solid rgba(255,255,255,0.9);
+  box-shadow: 0 12px 40px rgba(219,39,119,0.07), 0 2px 8px rgba(0,0,0,0.03);
+  animation: fadeSlideUp 0.5s ease-out 0.06s both;
+}
+
+.wb-hero-blob {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.wb-hero-blob-1 {
+  width: 200px; height: 200px;
+  top: -70px; right: -60px;
+  background: radial-gradient(circle, rgba(255,255,255,0.5) 0%, transparent 70%);
+}
+
+.wb-hero-blob-2 {
+  width: 100px; height: 100px;
+  bottom: -30px; left: 20%;
+  background: radial-gradient(circle, rgba(219,39,119,0.06) 0%, transparent 70%);
+}
+
+.wb-hero-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  position: relative;
+  z-index: 1;
+}
+
+.wb-hero-text h2 {
+  font-size: 1.6rem;
+  font-weight: 900;
+  color: #831843;
+  margin-bottom: 6px;
+  letter-spacing: -0.4px;
+}
+
+.wb-hero-text p {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #be185d;
+}
+
+.wb-hero-illustration { flex-shrink: 0; }
+
+.wb-lotus {
+  font-size: 3.5rem;
+  line-height: 1;
+  animation: floatLotus 3s ease-in-out infinite;
+  filter: drop-shadow(0 4px 12px rgba(219,39,119,0.2));
+}
+
+@keyframes floatLotus {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-8px); }
+}
+
+/* Quick resource cards row */
+.wb-quick-resources {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  position: relative;
+  z-index: 1;
+}
+
+.wb-resource-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255,255,255,0.8);
+  backdrop-filter: blur(6px);
+  border: 1.5px solid var(--rbd, #fbcfe8);
+  border-radius: 18px;
+  padding: 14px 16px;
+  cursor: pointer;
+  font-family: 'Nunito', sans-serif;
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  text-align: left;
+}
+
+.wb-resource-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  background: white;
+}
+
+.wb-rc-icon {
+  width: 38px; height: 38px;
+  border-radius: 12px;
+  background: var(--rb, #fce7f3);
+  color: var(--rc, #db2777);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.wb-rc-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.wb-rc-label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 2px;
+}
+
+.wb-rc-sub {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wb-rc-chevron {
+  color: var(--text-secondary);
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.wb-resource-card:hover .wb-rc-chevron { transform: translateX(3px); }
+
+/* ── BREATHING OVERLAY ── */
+.wb-breathing-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(4px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.3s ease both;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.wb-breathing-modal {
+  background: white;
+  border-radius: 32px;
+  padding: 48px 40px;
+  text-align: center;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.2);
+  max-width: 340px;
+  width: 90%;
+}
+
+.wb-breath-circle {
+  width: 140px; height: 140px;
+  border-radius: 50%;
+  margin: 0 auto 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #dbeafe, #d1fae5);
+  transition: transform 4s cubic-bezier(0.4, 0, 0.2, 1), background 1s ease;
+}
+
+.wb-breath-circle--in {
+  transform: scale(1.3);
+  background: linear-gradient(135deg, #dbeafe, #c7d2fe);
+}
+
+.wb-breath-circle--hold {
+  transform: scale(1.3);
+  background: linear-gradient(135deg, #d1fae5, #bbf7d0);
+}
+
+.wb-breath-circle--out {
+  transform: scale(1);
+  background: linear-gradient(135deg, #fce7f3, #dbeafe);
+}
+
+.wb-breath-emoji { font-size: 2.5rem; }
+
+.wb-breath-phase {
+  font-size: 1.3rem;
+  font-weight: 900;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.wb-breath-count {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 28px;
+}
+
+.wb-breath-close {
+  background: var(--brand-blue);
+  color: white;
+  border: none;
+  padding: 12px 32px;
+  border-radius: 40px;
+  font-weight: 800;
+  font-size: 0.9rem;
+  font-family: 'Nunito', sans-serif;
+  cursor: pointer;
+  transition: all 0.22s ease;
+}
+
+.wb-breath-close:hover {
+  background: #2563eb;
+  transform: scale(1.04);
+}
+
+/* ── MAIN GRID ── */
+.wb-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+}
+
+.wb-col { display: flex; flex-direction: column; gap: 22px; }
+
+/* ── CARDS ── */
+.wb-card {
+  background: var(--bg-card);
+  border-radius: 24px;
+  padding: 26px;
+  border: 1.5px solid #f0f4fb;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+  animation: fadeSlideUp 0.5s ease-out both;
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.wb-card:hover {
+  box-shadow: 0 10px 36px rgba(0,0,0,0.07);
+  transform: translateY(-2px);
+}
+
+.wb-card:nth-child(1) { animation-delay: 0.1s; }
+.wb-card:nth-child(2) { animation-delay: 0.2s; }
+
+.wb-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.wb-card-emoji { font-size: 1.3rem; }
+
+.wb-card-title {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.2px;
+}
+
+/* ── MOOD BUTTONS ── */
+.wb-mood-buttons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.wb-mood-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 16px 10px;
+  border-radius: 18px;
+  border: 2px solid var(--mbd, #e2e8f0);
+  background: var(--bg-main);
+  cursor: pointer;
+  font-family: 'Nunito', sans-serif;
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.wb-mood-btn:hover {
+  transform: translateY(-4px) scale(1.03);
+  background: var(--mb, #f8fafc);
+  border-color: var(--mc, #3b82f6);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+}
+
+.wb-mood-btn--active {
+  background: var(--mb, #dbeafe);
+  border-color: var(--mc, #3b82f6);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  transform: translateY(-2px);
+}
+
+.wb-mood-emoji { font-size: 2rem; line-height: 1; }
+.wb-mood-label { font-size: 0.75rem; font-weight: 800; color: var(--text-primary); }
+
+/* Affirmation */
+.wb-affirmation {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(120deg, #fef9c3, #fef3c7);
+  border: 1.5px solid #fde68a;
+  color: #78350f;
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 12px 16px;
+  border-radius: 16px;
+  margin-bottom: 14px;
+  animation: fadeSlideUp 0.35s ease-out both;
+}
+
+/* Note input */
+.wb-note-input {
+  width: 100%;
+  border: 1.5px solid #e8edf5;
+  border-radius: 14px;
+  padding: 12px 14px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  background: var(--bg-main);
+  resize: none;
+  outline: none;
+  margin-bottom: 12px;
+  transition: border-color 0.2s ease;
+}
+
+.wb-note-input:focus { border-color: var(--brand-blue); background: white; }
+
+/* Submit mood button */
+.wb-submit-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #fce7f3, #fbcfe8);
+  color: #9d174d;
+  border: 1.5px solid #fbcfe8;
+  padding: 11px 22px;
+  border-radius: 40px;
+  cursor: pointer;
+  font-weight: 800;
+  font-size: 0.85rem;
+  font-family: 'Nunito', sans-serif;
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.wb-submit-btn:hover {
+  background: #db2777;
+  color: white;
+  border-color: #db2777;
+  transform: scale(1.04);
+  box-shadow: 0 6px 20px rgba(219,39,119,0.25);
+}
+
+/* ── MOOD HISTORY ── */
+.wb-history-list { display: flex; flex-direction: column; gap: 10px; }
+
+.wb-history-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--mb, #f8fafc);
+  border-radius: 16px;
+  border: 1.5px solid transparent;
+  transition: border-color 0.2s ease;
+}
+
+.wb-history-item:hover { border-color: var(--mc, #e2e8f0); }
+
+.wb-hist-emoji { font-size: 1.3rem; flex-shrink: 0; }
+.wb-hist-text  { flex: 1; min-width: 0; }
+.wb-hist-mood  { font-size: 0.85rem; font-weight: 800; display: block; margin-bottom: 2px; }
+.wb-hist-note  { font-size: 0.75rem; font-weight: 500; color: var(--text-secondary); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wb-hist-date  { font-size: 0.72rem; font-weight: 700; color: var(--text-secondary); flex-shrink: 0; }
+
+/* ── JOURNAL CARD ── */
+.wb-journal-card { }
+
+.wb-prompt-box {
+  background: linear-gradient(120deg, #f0fdf4, #dcfce7);
+  border: 1.5px solid #bbf7d0;
+  border-radius: 18px;
+  padding: 16px 18px;
+  margin-bottom: 16px;
+}
+
+.wb-prompt-text {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #14532d;
+  font-style: italic;
+  font-family: 'Lora', serif;
+  line-height: 1.5;
+  margin-bottom: 10px;
+}
+
+.wb-prompt-next {
+  background: none;
+  border: none;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #16a34a;
+  cursor: pointer;
+  font-family: 'Nunito', sans-serif;
+  padding: 0;
+  transition: opacity 0.2s;
+}
+
+.wb-prompt-next:hover { opacity: 0.7; }
+
+.wb-journal-input {
+  width: 100%;
+  border: 1.5px solid #e8edf5;
+  border-radius: 16px;
+  padding: 14px 16px;
+  font-family: 'Lora', serif;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  background: var(--bg-main);
+  resize: none;
+  outline: none;
+  margin-bottom: 14px;
+  transition: border-color 0.2s ease;
+  line-height: 1.6;
+}
+
+.wb-journal-input:focus { border-color: #16a34a; background: white; }
+
+.wb-save-btn {
+  background: linear-gradient(135deg, #d1fae5, #bbf7d0);
+  color: #065f46;
+  border: 1.5px solid #bbf7d0;
+  padding: 11px 24px;
+  border-radius: 40px;
+  cursor: pointer;
+  font-weight: 800;
+  font-size: 0.85rem;
+  font-family: 'Nunito', sans-serif;
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: block;
+  width: 100%;
+}
+
+.wb-save-btn:hover:not(:disabled) {
+  background: #16a34a;
+  color: white;
+  border-color: #16a34a;
+  transform: scale(1.02);
+  box-shadow: 0 6px 20px rgba(22,163,74,0.25);
+}
+
+.wb-save-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.wb-save-btn--saved {
+  background: linear-gradient(135deg, #16a34a, #15803d) !important;
+  color: white !important;
+  border-color: #16a34a !important;
+}
+
+/* ── GROUNDING CARD ── */
+.wb-ground-card {
+  background: linear-gradient(135deg, #fff7fb 0%, #fce7f3 100%);
+  border-color: #fbcfe8;
+}
+
+.wb-ground-steps { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+
+.wb-ground-step {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: rgba(255,255,255,0.7);
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.8);
+}
+
+.wb-ground-num {
+  width: 28px; height: 28px;
+  background: linear-gradient(135deg, #db2777, #ec4899);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 900;
+  flex-shrink: 0;
+}
+
+.wb-ground-emoji { font-size: 1.1rem; flex-shrink: 0; }
+.wb-ground-text  { font-size: 0.85rem; font-weight: 600; color: #831843; }
+
+.wb-ground-footer {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #be185d;
+  font-family: 'Lora', serif;
+  font-style: italic;
+  margin: 0;
+  text-align: center;
+}
+
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ═════════════════════════════════════════
+   MOBILE RESPONSIVENESS
+   ═════════════════════════════════════════ */
+
+@media (max-width: 1024px) {
+  .wb-hero-content { flex-direction: column; justify-content: flex-start; }
+  .wb-lotus { font-size: 2.5rem; }
+}
+
+@media (max-width: 768px) {
+  .wb-page { padding: 1.5rem 1rem 2rem; margin-top: 56px; }
+
+  .wb-header { margin-bottom: 1.5rem; flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+  .wb-title { font-size: 1.5rem; }
+  .wb-eyebrow { font-size: 0.6rem; }
+  .wb-subtitle { font-size: 0.85rem; align-self: flex-start; }
+
+  .wb-hero {
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.5rem;
+    border-radius: 1.25rem;
+  }
+
+  .wb-hero .wb-hero-blob-1,
+  .wb-hero .wb-hero-blob-2 { display: none; }
+
+  .wb-hero-content { gap: 1rem; margin-bottom: 1rem; }
+  .wb-hero-text h2 { font-size: 1.25rem; margin-bottom: 0.4rem; }
+  .wb-hero-text p { font-size: 0.85rem; }
+  .wb-lotus { font-size: 2rem; }
+
+  .wb-quick-resources {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+
+  .wb-resource-card {
+    padding: 0.875rem 1rem;
+    border-radius: 1rem;
+  }
+
+  .wb-rc-icon { width: 34px; height: 34px; font-size: 1.1rem; }
+  .wb-rc-label { font-size: 0.75rem; }
+  .wb-rc-sub { font-size: 0.65rem; }
+
+  /* CRITICAL: Main grid collapses to single column */
+  .wb-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .wb-col { gap: 1rem; }
+
+  /* Breathing modal responsive */
+/* Breathing modal responsive - CENTERED & POLISHED */
+  .wb-breathing-overlay { 
+    top: 0; bottom: 0; left: 0; right: 0; 
+    align-items: center; /* CRITICAL: This keeps it floating in the middle! */
+    justify-content: center; 
+    background: rgba(0,0,0,0.55); 
+    z-index: 9999;
+  }
+  .wb-breathing-modal { 
+    width: 90%; 
+    max-width: 340px; 
+    max-height: 85vh; 
+    border-radius: 28px; 
+    /* Slightly less padding on the bottom to balance the button's visual weight */
+    padding: 2.5rem 1.5rem 2rem; 
+    margin: 0;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15); 
+  }
+
+  .wb-breath-circle { width: 130px; height: 130px; margin: 0 auto 1.25rem; flex-shrink: 0; }
+/* Added 0.5rem to top and bottom to space it out nicely */
+  .wb-breath-phase { font-size: 1.4rem; margin: 0.5rem 0 0.5rem; font-weight: 900; color: #1e293b; }
+  /* Reduced margin-bottom from 2rem to 1.5rem to pull the button closer */
+  .wb-breath-count { font-size: 0.9rem; margin-bottom: 1.5rem; color: #64748b; font-weight: 600; }
+  .wb-breath-close { width: 100%; padding: 0.9rem 1.25rem; font-size: 1rem; border-radius: 100px; }
+    /* Mood card responsive */
+  .wb-mood-card { padding: 1rem; }
+  .wb-card-header { margin-bottom: 0.75rem; }
+  .wb-card-title { font-size: 1rem; }
+  .wb-mood-buttons { gap: 0.5rem; }
+  .wb-mood-btn { padding: 0.75rem 1rem; font-size: 0.75rem; }
+  .wb-mood-emoji { font-size: 1.2rem; }
+  .wb-affirmation { padding: 0.75rem; font-size: 0.85rem; }
+  .wb-history-item { padding: 0.75rem; font-size: 0.85rem; }
+  .wb-note-input { font-size: 0.85rem; padding: 0.75rem; }
+  .wb-submit-btn { padding: 0.75rem 1.25rem; font-size: 0.8rem; }
+
+  /* Journal card responsive */
+  .wb-journal-card { padding: 1rem; }
+  .wb-prompt-box { margin-bottom: 1rem; padding: 0.75rem; }
+  .wb-prompt-text { font-size: 0.9rem; }
+  .wb-prompt-next { padding: 0.5rem 0.75rem; font-size: 0.75rem; }
+  .wb-journal-input { min-height: 120px; font-size: 0.85rem; padding: 0.75rem; }
+  .wb-save-btn { padding: 0.75rem 1.25rem; font-size: 0.8rem; }
+
+  /* Grounding card responsive */
+  .wb-ground-card { padding: 1rem; }
+  .wb-ground-steps { gap: 0.75rem; }
+  .wb-ground-step { gap: 0.75rem; padding: 0.75rem; font-size: 0.85rem; }
+  .wb-ground-num { width: 2rem; height: 2rem; font-size: 0.85rem; }
+  .wb-ground-emoji { font-size: 1rem; }
+  .wb-ground-text { font-size: 0.85rem; }
+  .wb-ground-footer { font-size: 0.75rem; margin-top: 0.75rem; }
+}
+
+@media (max-width: 640px) {
+  .wb-page { padding: 1.25rem 0.75rem 2rem; margin-top: 52px; }
+
+  .wb-title { font-size: 1.25rem; }
+  .wb-eyebrow { font-size: 0.55rem; }
+
+  .wb-hero { padding: 0.875rem 1rem; }
+  .wb-hero-text h2 { font-size: 1.1rem; }
+  .wb-hero-text p { font-size: 0.8rem; }
+  .wb-lotus { font-size: 1.75rem; }
+
+  .wb-quick-resources { grid-template-columns: 1fr; gap: 0.5rem; }
+  .wb-resource-card { padding: 0.75rem 0.875rem; }
+  .wb-rc-icon { width: 30px; height: 30px; }
+  .wb-rc-label { font-size: 0.7rem; }
+  .wb-rc-sub { font-size: 0.6rem; }
+
+.wb-breathing-modal { 
+    padding: 2rem 1.25rem 1.5rem; 
+    border-radius: 24px; 
+  }
+  .wb-breath-circle { width: 110px; height: 110px; margin: 0 auto 1rem; }
+/* Same here for smaller phones */
+  .wb-breath-phase { font-size: 1.25rem; margin: 0.5rem 0 0.5rem; }
+  /* Pulled the button closer here as well */
+  .wb-breath-count { font-size: 0.85rem; margin-bottom: 1.25rem; }
+  .wb-breath-close { padding: 0.8rem 1rem; font-size: 0.9rem; }
+    /* Smaller padding on smallest screens */
+  .wb-card { padding: 0.875rem; }
+  .wb-mood-buttons { gap: 0.4rem; }
+  .wb-mood-btn { padding: 0.625rem 0.875rem; font-size: 0.7rem; }
+  .wb-history-item { padding: 0.625rem; font-size: 0.8rem; }
+  .wb-note-input { font-size: 0.8rem; padding: 0.625rem; }
+  .wb-submit-btn { padding: 0.625rem 1rem; font-size: 0.75rem; }
+
+  .wb-prompt-box { padding: 0.625rem; }
+  .wb-prompt-text { font-size: 0.85rem; }
+  .wb-prompt-next { padding: 0.4rem 0.625rem; font-size: 0.7rem; }
+  .wb-journal-input { min-height: 100px; font-size: 0.8rem; padding: 0.625rem; }
+  .wb-save-btn { padding: 0.625rem 1rem; font-size: 0.75rem; }
+
+  .wb-ground-steps { gap: 0.5rem; }
+  .wb-ground-step { gap: 0.5rem; padding: 0.625rem; font-size: 0.8rem; }
+  .wb-ground-num { width: 1.75rem; height: 1.75rem; font-size: 0.75rem; }
+  .wb-ground-footer { font-size: 0.7rem; }
+}
