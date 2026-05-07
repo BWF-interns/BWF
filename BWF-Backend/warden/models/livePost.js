@@ -33,4 +33,4 @@ const livePostSchema = new mongoose.Schema({
   originalPendingId:{ type: String },
 }, { timestamps: true });
 
-module.exports = mongoose.model('Post', livePostSchema);
+module.exports = mongoose.model('LivePost', livePostSchema);
