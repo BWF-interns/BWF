@@ -6,7 +6,6 @@ const router     = express.Router();
 const ctrl       = require('./controller');
 const { authenticateToken } = require('../auth/middleware');
 
-// Middleware: require valid JWT AND admin role
 function requireAdmin(req, res, next) {
   if (req.user?.role !== 'admin') {
     return res.status(403).json({ message: 'Admin access required' });
@@ -49,5 +48,52 @@ router.delete('/posts/:id', ctrl.deletePost);
 
 // Audit Logs (read-only)
 router.get('/audit-logs', ctrl.getAuditLogs);
+
+// Reports
+router.get('/reports/summary', ctrl.getReportSummary);
+
+// Feedback
+router.get ('/feedback',         ctrl.listFeedback);
+router.post('/feedback',         ctrl.addFeedback);
+router.put ('/feedback/:id',     ctrl.reviewFeedback);
+
+// Grievances
+router.get ('/grievances',       ctrl.listGrievances);
+router.post('/grievances',       ctrl.addGrievance);
+router.put ('/grievances/:id',   ctrl.updateGrievance);
+
+// Calendar
+router.get   ('/calendar/events',     ctrl.getCalendarEvents);
+router.post  ('/calendar/events',     ctrl.addCalendarEvent);
+router.delete('/calendar/events/:id', ctrl.deleteCalendarEvent);
+
+// Community — Pending Posts (moderation queue)
+router.get   ('/community/pending',       ctrl.listPendingPosts);
+router.put   ('/community/pending/:id',   ctrl.reviewPendingPost);
+router.delete('/community/pending/:id',   ctrl.deletePendingPost);
+
+// Community — Live Posts
+router.get   ('/community/posts',         ctrl.listLivePosts);
+router.post  ('/community/posts',         ctrl.createLivePost);
+router.put   ('/community/posts/:id',     ctrl.updateLivePost);
+router.delete('/community/posts/:id',     ctrl.deleteLivePost);
+router.put   ('/community/posts/:id/pin', ctrl.togglePinPost);
+
+// Activities — Pending
+router.get   ('/activities/pending',     ctrl.listPendingActivities);
+router.put   ('/activities/pending/:id', ctrl.reviewPendingActivity);
+router.delete('/activities/pending/:id', ctrl.deletePendingActivity);
+
+// Activities — Live
+router.get   ('/activities',     ctrl.listActivities);
+router.post  ('/activities',     ctrl.createActivity);
+router.put   ('/activities/:id', ctrl.updateActivity);
+router.delete('/activities/:id', ctrl.deleteActivity);
+
+// Complaints
+router.get   ('/complaints',            ctrl.listComplaints);
+router.put   ('/complaints/:id/resolve', ctrl.resolveComplaint);
+router.put   ('/complaints/:id/escalate',ctrl.escalateComplaint);
+router.delete('/complaints/:id',        ctrl.deleteComplaint);
 
 module.exports = router;

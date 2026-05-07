@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { loginUser } from "../../auth/login/service";
+import { loginUser } from "../lib/auth";
 
 type LoginError = {
   message?: string;
