@@ -5,19 +5,20 @@ import { useEffect, useState } from "react";
 import { adminAPI } from "../lib/api";
 
 const NAV_ITEMS = [
-  { href: "/admin/dashboard",   icon: "📊", label: "Dashboard" },
-  { href: "/admin/students",    icon: "🎓", label: "Students" },
-  { href: "/admin/staff",       icon: "👥", label: "Staff & Caseload" },
-  { href: "/admin/finance",     icon: "💰", label: "Finance" },
-  { href: "/admin/reports",     icon: "📄", label: "Reports" },
-  { href: "/admin/community",   icon: "🗣️",  label: "Community Feed" },
-  { href: "/admin/activities",  icon: "🏆", label: "Activities" },
-  { href: "/admin/complaints",  icon: "📋", label: "Complaints" },
-  { href: "/admin/feed",        icon: "📱", label: "Social Feed" },
-  { href: "/admin/calendar",    icon: "📅", label: "Calendar" },
-  { href: "/admin/feedback",    icon: "💬", label: "Feedback" },
-  { href: "/admin/grievances",  icon: "🆘", label: "Grievances" },
-  { href: "/admin/audit-logs",  icon: "🔍", label: "Audit Logs" },
+  { href: "/admin/dashboard",    icon: "📊", label: "Dashboard" },
+  { href: "/admin/students",     icon: "🎓", label: "Students" },
+  { href: "/admin/staff",        icon: "👥", label: "Staff & Caseload" },
+  { href: "/admin/finance",      icon: "💰", label: "Finance" },
+  { href: "/admin/reports",      icon: "📄", label: "Reports" },
+  { href: "/admin/home-records", icon: "🗂️",  label: "Home Records" },
+  { href: "/admin/community",    icon: "🗣️",  label: "Community Feed" },
+  { href: "/admin/activities",   icon: "🏆", label: "Activities" },
+  { href: "/admin/complaints",   icon: "📋", label: "Complaints" },
+  { href: "/admin/feed",         icon: "📱", label: "Social Feed" },
+  { href: "/admin/calendar",     icon: "📅", label: "Calendar" },
+  { href: "/admin/feedback",     icon: "💬", label: "Feedback" },
+  { href: "/admin/grievances",   icon: "🆘", label: "Grievances" },
+  { href: "/admin/audit-logs",   icon: "🔍", label: "Audit Logs" },
 ];
 
 export default function AdminSidebar() {

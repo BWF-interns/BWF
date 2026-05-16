@@ -1,4 +1,4 @@
-// admin/controller.js — Full CRUD + Reports, Feedback, Grievances, Calendar, Community, Activities, Complaints
+// admin/controller.js — Full CRUD + Reports, Feedback, Grievances, Calendar, Community, Activities, Complaints, HomeRecords
 
 const Student        = require('../student/models/student');
 const StaffMember    = require('../models/StaffMember');
@@ -14,6 +14,7 @@ const LivePost       = require('../warden/models/livePost');
 const Activity       = require('../warden/models/activity');
 const PendingActivity = require('../warden/models/pendingActivity');
 const WardenComplaint = require('../warden/models/wardenComplaint');
+const HomeRecord     = require('../models/HomeRecord');
 const { sendSoSAlert } = require('../utils/mailer');
 
 function adminInfo(req) { return { adminId: req.user.id, adminName: req.user.auth_id }; }
@@ -719,5 +720,135 @@ exports.deleteComplaint = async (req, res) => {
     const c = await WardenComplaint.findByIdAndDelete(req.params.id);
     if (!c) return res.status(404).json({ message: 'Not found' });
     res.json({ message: 'Complaint deleted' });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+};
+
+// ══════════════════════════════════════════════════════════════════════════════
+// HOME RECORDS  (JJ Act Rule 21 & 22 — Ministry of WCD compliance)
+// ══════════════════════════════════════════════════════════════════════════════
+
+/** GET /admin/home-records
+ *  Filters: home, category, fileType, childId, status
+ */
+exports.listHomeRecords = async (req, res) => {
+  try {
+    const filter = {};
+    if (req.query.home)     filter.home     = req.query.home;
+    if (req.query.category) filter.category = req.query.category;
+    if (req.query.fileType) filter.fileType = req.query.fileType;
+    if (req.query.childId)  filter.childId  = req.query.childId;
+    if (req.query.status)   filter.status   = req.query.status;
+    const records = await HomeRecord.find(filter).sort({ home: 1, category: 1, childName: 1 });
+    res.json(records);
+  } catch (err) { res.status(500).json({ message: err.message }); }
+};
+
+/** POST /admin/home-records — create a new register or file */
+exports.addHomeRecord = async (req, res) => {
+  try {
+    const { home, category, title, fileType, childId, childName,
+            maintainedBy, notes, status } = req.body;
+    if (!home || !category || !title || !fileType)
+      return res.status(400).json({ message: 'home, category, title, fileType are required' });
+
+    const record = await HomeRecord.create({
+      home, category, title, fileType,
+      childId, childName, maintainedBy, notes,
+      status: status || 'active',
+      createdBy: req.user.auth_id,
+      ruleReference: 'JJ Model Rules 2016, Rule 21 & 22',
+    });
+    await log(req, 'ADD_HOME_RECORD', 'home_record', record._id, record.title, null, record.toObject());
+    res.status(201).json(record);
+  } catch (err) { res.status(500).json({ message: err.message }); }
+};
+
+/** PUT /admin/home-records/:id — update metadata */
+exports.updateHomeRecord = async (req, res) => {
+  try {
+    const before = await HomeRecord.findById(req.params.id).lean();
+    if (!before) return res.status(404).json({ message: 'Record not found' });
+    const allowed = ['title','status','maintainedBy','notes','lastInspectedOn','inspectedBy','updatedBy'];
+    const update = {};
+    allowed.forEach(f => { if (req.body[f] !== undefined) update[f] = req.body[f]; });
+    update.updatedBy = req.user.auth_id;
+    const after = await HomeRecord.findByIdAndUpdate(req.params.id, update, { new: true });
+    await log(req, 'UPDATE_HOME_RECORD', 'home_record', after._id, after.title, before, after.toObject());
+    res.json(after);
+  } catch (err) { res.status(500).json({ message: err.message }); }
+};
+
+/** DELETE /admin/home-records/:id */
+exports.deleteHomeRecord = async (req, res) => {
+  try {
+    const r = await HomeRecord.findByIdAndDelete(req.params.id);
+    if (!r) return res.status(404).json({ message: 'Record not found' });
+    await log(req, 'DELETE_HOME_RECORD', 'home_record', r._id, r.title, r.toObject(), null);
+    res.json({ message: 'Home record deleted' });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+};
+
+/** POST /admin/home-records/:id/entries — add a log entry to a register */
+exports.addRecordEntry = async (req, res) => {
+  try {
+    const { content, childId, childName, referenceNo, attachmentUrl } = req.body;
+    if (!content) return res.status(400).json({ message: 'content is required' });
+    const record = await HomeRecord.findById(req.params.id);
+    if (!record) return res.status(404).json({ message: 'Record not found' });
+    record.entries.push({
+      content, childId, childName, referenceNo, attachmentUrl,
+      enteredBy: req.user.auth_id,
+      date: new Date(),
+    });
+    await record.save();
+    await log(req, 'ADD_RECORD_ENTRY', 'home_record', record._id, record.title, null, { content });
+    res.status(201).json(record);
+  } catch (err) { res.status(500).json({ message: err.message }); }
+};
+
+/** DELETE /admin/home-records/:id/entries/:entryId */
+exports.deleteRecordEntry = async (req, res) => {
+  try {
+    const record = await HomeRecord.findById(req.params.id);
+    if (!record) return res.status(404).json({ message: 'Record not found' });
+    const entry = record.entries.id(req.params.entryId);
+    if (!entry) return res.status(404).json({ message: 'Entry not found' });
+    entry.deleteOne();
+    await record.save();
+    res.json({ message: 'Entry deleted' });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+};
+
+/** GET /admin/home-records/summary/:home
+ *  Returns compliance overview: how many records exist vs expected,
+ *  flagged/missing counts, and per-category status.
+ */
+exports.homeRecordSummary = async (req, res) => {
+  try {
+    const { home } = req.params;
+    const records = await HomeRecord.find({ home }).lean();
+
+    const REQUIRED_REGISTERS = 29; // shared registers per home
+    const sharedCount  = records.filter(r => r.fileType === 'shared_register').length;
+    const childCount   = records.filter(r => r.fileType === 'per_child').length;
+    const missingCount = records.filter(r => r.status === 'missing').length;
+    const flaggedCount = records.filter(r => r.status === 'flagged' || (r.entries || []).some(e => e.status === 'flagged')).length;
+
+    // Group by category for detailed view
+    const byCategory = {};
+    for (const r of records) {
+      if (!byCategory[r.category]) byCategory[r.category] = [];
+      byCategory[r.category].push({ _id: r._id, title: r.title, fileType: r.fileType, status: r.status, childName: r.childName });
+    }
+
+    res.json({
+      home,
+      sharedRegisters: { present: sharedCount, required: REQUIRED_REGISTERS },
+      perChildFiles:   { total: childCount },
+      missingCount,
+      flaggedCount,
+      byCategory,
+      complianceScore: Math.round((Math.min(sharedCount, REQUIRED_REGISTERS) / REQUIRED_REGISTERS) * 100),
+    });
   } catch (err) { res.status(500).json({ message: err.message }); }
 };

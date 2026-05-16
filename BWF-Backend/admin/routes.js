@@ -96,4 +96,14 @@ router.put   ('/complaints/:id/resolve', ctrl.resolveComplaint);
 router.put   ('/complaints/:id/escalate',ctrl.escalateComplaint);
 router.delete('/complaints/:id',        ctrl.deleteComplaint);
 
+// ── Home Records (JJ Act Rule 21 & 22) ───────────────────────────────────────
+router.get   ('/home-records',                    ctrl.listHomeRecords);
+router.post  ('/home-records',                    ctrl.addHomeRecord);
+router.put   ('/home-records/:id',                ctrl.updateHomeRecord);
+router.delete('/home-records/:id',                ctrl.deleteHomeRecord);
+router.post  ('/home-records/:id/entries',        ctrl.addRecordEntry);
+router.delete('/home-records/:id/entries/:entryId', ctrl.deleteRecordEntry);
+router.get   ('/home-records/summary/:home',      ctrl.homeRecordSummary);
+
 module.exports = router;
+
