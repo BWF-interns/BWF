@@ -39,9 +39,10 @@ export default function HomePage() {
       title: "Admin Panel",
       description: "Complete system administration and oversight",
       icon: <UserCog size={24} />,
-      route: "/admin/dashboard",
+      route: "/admin/login",
       color: "bg-green-500",
     },
+
   ];
 
   return (
